@@ -6,7 +6,8 @@ namespace SpectateServer
 	{
 		public static void Main (string[] args)
 		{
-			Console.WriteLine ("Hello World!");
+            Relay.createNewRelay("Client1", "localhost", 10244);
+            Console.ReadLine();
 		}
 	}
 }
