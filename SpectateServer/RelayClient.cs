@@ -5,48 +5,31 @@ using System.Text;
 
 namespace SpectateServer
 {
-	public class Relay
+	public class RelayClient
 	{
+        private string name;
+        //Client
 		private string HOST;
 		private int PORT;
 		private Thread thread;
         private TcpClient tcpClient;
         private bool connected = false;
         private bool doListen = true;
-        private string name;
-        private NetworkStream stream;
+        private NetworkStream clientStream;
+        private RelayServer server;
 
-        public static Relay createNewRelay(string name, String h, int p)
-        {
-            Relay r = new Relay(name,h,p);
-            return r;
-        }
-
-        public Relay(string name, string h, int p)
+        public RelayClient(string name, string h, int p)
 		{
             this.name = name;
+            //start client
             HOST = h;
             PORT = p;
             tcpClient = new TcpClient();
-            Thread t = new Thread(this.listen);
-            this.setThread(t);
-            t.Start();
-            Log.notify("Not connected, trying to connect", this);
-            connected = loginToSever();
-            DateTime lastPing = DateTime.Now;
-            while (connected)
-            {
-                if (DateTime.Now.Subtract(lastPing).TotalSeconds > 2)
-                {
-                    lastPing = DateTime.Now;
-                    maintainConnection();
-                }
-            }
 		}
 
 		private void listen(){
             bool readPayload = false;
-            int channel;
+            int channel = 0;
             int size = 0;
             byte[] payload;
 
@@ -60,7 +43,7 @@ namespace SpectateServer
                     if (tcpClient.ReceiveBufferSize >= 8 && !readPayload)
                     {
                         //Get channel and size
-                        stream.Read(headerBuffer, 0, 8);
+                        clientStream.Read(headerBuffer, 0, 8);
                         channel = BitConverter.ToInt32(headerBuffer,0);
                         size = BitConverter.ToInt32(headerBuffer,4);
                         Log.notify("Received " + size + "B on channel " + channel, this);
@@ -69,9 +52,13 @@ namespace SpectateServer
                     if (readPayload)
                     {
                         payload = new byte[size];
-                        stream.Read(payload, 0, size);
-                        //TODO Redirect to output stream
-                        //TODO Redirec to analytics
+                        clientStream.Read(payload, 0, size);
+                        byte[] data = new byte[8 + size];
+                        BitConverter.GetBytes(channel).CopyTo(data, 0);
+                        BitConverter.GetBytes(size).CopyTo(data, 4);
+                        payload.CopyTo(data, 8);
+                        server.sendToClients(data);
+                        //TODO Redirect to analytics
                         readPayload = false;
                     }
                 }
@@ -89,7 +76,7 @@ namespace SpectateServer
             {
                 Log.notify("Connecting..", this);
                 tcpClient.Connect(HOST,PORT);
-                stream = tcpClient.GetStream();
+                clientStream = tcpClient.GetStream();
                 byte[] hello = new byte[17];
                 hello[0] = 7;
                 hello[1] = 0;
@@ -102,7 +89,7 @@ namespace SpectateServer
                 System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
                 byte[] name = enc.GetBytes("SpecRelay");
                 name.CopyTo(hello, 8);
-                stream.Write(hello,0,hello.Length);
+                clientStream.Write(hello,0,hello.Length);
                 return true;
             }
             catch (Exception e)
@@ -114,8 +101,38 @@ namespace SpectateServer
 
         private void maintainConnection()
         {
-            byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
-            stream.Write(ping, 0, 8);
+            DateTime lastPing = DateTime.Now;
+            while (connected)
+            {
+                if (DateTime.Now.Subtract(lastPing).TotalSeconds > 2)
+                {
+                    lastPing = DateTime.Now;
+                    byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
+                    clientStream.Write(ping, 0, 8);
+                }
+            }
+            
+        }
+
+        public void connect()
+        {
+            Thread t = new Thread(this.listen);
+            this.setThread(t);
+            t.Start();
+            connected = loginToSever();
+            if (connected)
+            {
+                Log.notify("Connected.", this);
+                Thread t1 = new Thread(this.maintainConnection);
+                t1.Start();
+            }
+        }
+
+        public void disconnect()
+        {
+            doListen = false;
+            connected = false;
+            tcpClient.Close();
         }
 
         public override string ToString()
@@ -124,6 +141,11 @@ namespace SpectateServer
         }
 
         #region Get/Set
+        public void setServer(RelayServer s)
+        {
+            this.server = s;
+        }
+
         public void setThread(Thread t)
         {
             this.thread = t;

@@ -8,11 +8,14 @@ namespace SpectateServer
 {
     abstract class Log
     {
-        private static int loglvl;
+        private static int loglvl=1;
 
         public static void notify(string message, Object sender)
         {
-            Console.Out.WriteLine("Notify: "+sender.ToString() + ":  " + message);
+            if (loglvl >= 2)
+            {
+                Console.Out.WriteLine("Notify: " + sender.ToString() + ":  " + message);
+            }
         }
 
         public static void error(string message, Object sender)

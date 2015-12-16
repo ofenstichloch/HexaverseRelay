@@ -6,8 +6,16 @@ namespace SpectateServer
 	{
 		public static void Main (string[] args)
 		{
-            Relay.createNewRelay("Client1", "localhost", 10244);
+            Log.setLevel(2);
+            RelayServer rs = new RelayServer("RServer1", 20244);
+            RelayClient rc = new RelayClient("RClient1", "localhost", 10244);
+            rc.setServer(rs);
+            rs.connect();
+            rc.connect();
             Console.ReadLine();
+            rc.disconnect();
+            rs.disconnect();
+
 		}
 	}
 }
