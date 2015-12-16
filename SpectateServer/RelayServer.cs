@@ -24,6 +24,7 @@ namespace SpectateServer
 
         private void listen()
         {
+            Log.notify(name + " listing.", this);
             while (doListen)
             {
                 Socket client = tcpServer.AcceptSocket();
