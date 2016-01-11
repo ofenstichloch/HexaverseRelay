@@ -33,13 +33,19 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client.cs" />
+    <Compile Include="GameClient.cs" />
+    <Compile Include="InfoSocket.cs" />
+    <Compile Include="RelayServer.cs" />
+    <Compile Include="RelaySessionClient.cs" />
+    <Compile Include="SessionSocket.cs" />
+    <Compile Include="RelaySocket.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RelayClient.cs" />
-    <Compile Include="RelayControlServer.cs" />
-    <Compile Include="RelayServer.cs" />
+    <Compile Include="RelayComponent.cs" />
+    <Compile Include="RelayInfoClient.cs" />
+    <Compile Include="RelayInfoServer.cs" />
+    <Compile Include="RelaySessionServer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

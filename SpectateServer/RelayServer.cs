@@ -2,66 +2,50 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
 using System.Net.Sockets;
 
 namespace SpectateServer
 {
-    public class RelayServer
+    abstract class RelayServer : RelayComponent
     {
-        private string name;
-        private int port;
-        private TcpListener tcpServer;
-        private bool doListen = false;
-        private List<Client> clients;
-
-        public RelayServer(string name, int port)
+        protected TcpListener tcpServer;
+        protected List<RelaySocket> clients;
+        protected int port;
+       public RelayServer(string name, int port) : base(name)
         {
+            this.name = name;
+            this.port = port;
             tcpServer = new TcpListener(System.Net.IPAddress.Any, port);
-            clients = new List<Client>();
+            clients = new List<RelaySocket>();
         }
 
-        private void listen()
+        public void registerClient(RelaySocket c)
         {
-            Log.notify(name + " listing.", this);
-            while (doListen)
-            {
-                Socket client = tcpServer.AcceptSocket();
-                Client c = new Client(client, this);
-            }
-            
+            clients.Add(c);
         }
 
+        public void unregisterClient(RelaySocket c)
+        {
+            clients.Remove(c);
+        }
+
+        public abstract bool connect();
+
+        public abstract void disconnect();
+
+        protected abstract void acceptSockets();
+
+
+        //TODO  Sends fom server thread, maybe change to sender Thread(pool)?
         public void sendToClients(byte[] data)
         {
-            foreach (Client c in clients)
+            foreach (RelaySocket c in clients)
             {
                 c.send(data);
             }
         }
 
-        public void registerClient(Client c)
-        {
-            clients.Add(c);
-        }
-
-        public void unregisterClient(Client c)
-        {
-            clients.Remove(c);
-        }
-
-        public void connect()
-        {
-            doListen = true;
-            Thread t = new Thread(this.listen);
-            t.Start();
-            tcpServer.Start();
-        }
-
-        public void disconnect()
-        {
-            doListen = false;
-        }
+        public abstract void redirect(byte[] data);
     }
 }

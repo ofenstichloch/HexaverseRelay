@@ -7,33 +7,26 @@ using System.Net.Sockets;
 
 namespace SpectateServer
 {
-    public class Client
+    abstract class RelaySocket
     {
-        Socket client;
-        RelayServer server;
-        bool doListen = true;
+        protected Socket client;
+        protected RelayServer server;
+        protected bool doListen = true;
 
-        public Client(Socket s, RelayServer server)
+        public RelaySocket(Socket s, RelayServer server)
         {
             this.client = s;
-            Thread t = new Thread(this.listen);
-            t.Start();
+            this.server = server;
+            //Thread t = new Thread(this.listen);
+            //t.Start();
             server.registerClient(this);
         }
+
+        protected abstract void listen();
 
         public void send(byte[] data)
         {
             client.Send(data);
-        }
-
-        public void listen()
-        {
-            while (doListen)
-            {
-                //TODO reply ping with pong 
-            }
-            //unregister this client
-            server.unregisterClient(this);
         }
 
         public void disconnect()

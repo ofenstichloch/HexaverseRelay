@@ -1,33 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Net.Sockets;
-using System.Text;
 
 namespace SpectateServer
 {
-	public class RelayClient
-	{
-        private string name;
-        //Client
-		private string HOST;
-		private int PORT;
-		private Thread thread;
-        private TcpClient tcpClient;
-        private bool connected = false;
-        private bool doListen = true;
-        private NetworkStream clientStream;
-        private RelayServer server;
-
-        public RelayClient(string name, string h, int p)
+    class RelaySessionClient : GameClient
+    {
+        public RelaySessionClient(string name, string h, int p) : base(name,h,p)
 		{
-            this.name = name;
-            //start client
-            HOST = h;
-            PORT = p;
-            tcpClient = new TcpClient();
 		}
 
-		private void listen(){
+		protected override void listen(){
             bool readPayload = false;
             int channel = 0;
             int size = 0;
@@ -46,8 +32,9 @@ namespace SpectateServer
                         clientStream.Read(headerBuffer, 0, 8);
                         channel = BitConverter.ToInt32(headerBuffer,0);
                         size = BitConverter.ToInt32(headerBuffer,4);
-                        Log.notify("Received " + size + "B on channel " + channel, this);
+                        //Log.notify("Received " + size + "B on channel " + channel, this);
                         readPayload = true;
+ 
                     }
                     if (readPayload)
                     {
@@ -61,6 +48,7 @@ namespace SpectateServer
                         //TODO Redirect to analytics
                         readPayload = false;
                     }
+                    Thread.Sleep(1);
                 }
                 catch (Exception e)
                 {
@@ -74,18 +62,10 @@ namespace SpectateServer
 		private bool loginToSever(){
             try
             {
-                Log.notify("Connecting..", this);
                 tcpClient.Connect(HOST,PORT);
                 clientStream = tcpClient.GetStream();
-                byte[] hello = new byte[17];
-                hello[0] = 7;
-                hello[1] = 0;
-                hello[2] = 0;
-                hello[3] = 0;
-                hello[4] = 9;
-                hello[5] = 0;
-                hello[6] = 0;
-                hello[7] = 0;
+                byte[] hello = {7, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
                 System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
                 byte[] name = enc.GetBytes("SpecRelay");
                 name.CopyTo(hello, 8);
@@ -96,68 +76,45 @@ namespace SpectateServer
             {
                 Log.error(e.Message, this);
             }
+            disconnect();
 			return false;
 		}
 
         private void maintainConnection()
         {
-            DateTime lastPing = DateTime.Now;
             while (connected)
             {
-                if (DateTime.Now.Subtract(lastPing).TotalSeconds > 2)
-                {
-                    lastPing = DateTime.Now;
-                    byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
-                    clientStream.Write(ping, 0, 8);
-                }
+                Thread.Sleep(1000);
+                byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
+                clientStream.Write(ping, 0, 8);
             }
             
         }
 
-        public void connect()
+        public override bool connect()
         {
-            Thread t = new Thread(this.listen);
-            this.setThread(t);
-            t.Start();
             connected = loginToSever();
             if (connected)
             {
-                Log.notify("Connected.", this);
+                Thread t = new Thread(this.listen);
+                this.setThread(t);
+                t.Start();
                 Thread t1 = new Thread(this.maintainConnection);
                 t1.Start();
+                Log.notify("Connected.", this);
+                return true;
             }
+            
+            disconnect();
+            return false;
         }
 
-        public void disconnect()
+        public override void disconnect()
         {
             doListen = false;
             connected = false;
             tcpClient.Close();
         }
 
-        public override string ToString()
-        {
-            return this.name;
-        }
-
-        #region Get/Set
-        public void setServer(RelayServer s)
-        {
-            this.server = s;
-        }
-
-        public void setThread(Thread t)
-        {
-            this.thread = t;
-        }
-
-        public Thread getThread()
-        {
-            return this.thread;
-        }
-
-        public String getName() { return this.name; }
-        #endregion
     }
 }
-
