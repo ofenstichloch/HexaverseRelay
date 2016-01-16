@@ -9,8 +9,12 @@ namespace SpectateServer
 {
     class RelayInfoClient : GameClient
     {
-        public RelayInfoClient(string name, string h, int p)
-            : base(name,h,p)
+
+        Protocol.ByteBuffer buf = new Protocol.ByteBuffer(112);
+        Protocol.SerialInterface proc = Protocol.SerialInterface.Build(typeof(Protocol.ServerInfo));
+
+        public RelayInfoClient(string name, string h, int p, Host host)
+            : base(name,h,p, host)
         {
 
         }
@@ -39,7 +43,7 @@ namespace SpectateServer
                         readPayload = true;
 
                     }
-                    if (readPayload)
+                    if (readPayload && tcpClient.ReceiveBufferSize >=size)
                     {
                         payload = new byte[size];
                         clientStream.Read(payload, 0, size);
@@ -47,8 +51,22 @@ namespace SpectateServer
                         BitConverter.GetBytes(channel).CopyTo(data, 0);
                         BitConverter.GetBytes(size).CopyTo(data, 4);
                         payload.CopyTo(data, 8);
-                        server.sendToClients(data);
-                        //TODO Redirect to analytics
+                        buf.Clear();
+                        Object o = proc.Deserialize(payload,size);
+                        Protocol.ServerInfo serverInfo = (Protocol.ServerInfo) o;
+                        serverInfo.hostInfo.hostID = host.hostID;
+                        serverInfo.hostInfo.serverBasePort = (ushort) host.serverPort;
+                        host.serverInfo = serverInfo;
+                        proc.SerializePacket(0, serverInfo, buf);
+                        data = buf.GetArray();
+
+                        server.sendToClients(buf.GetArray(), buf.Length);
+                        //Save serverinfo
+                        readPayload = false;
+                    }
+                    else if (readPayload && size == 0)
+                    {
+                        //process a signal?
                         readPayload = false;
                     }
                     Thread.Sleep(1);
@@ -66,7 +84,7 @@ namespace SpectateServer
         {
             try
             {
-                tcpClient.Connect(HOST, PORT);
+                tcpClient.Connect(ServerAddress, ServerPort);
                 clientStream = tcpClient.GetStream();
                 connected = true;
                 Thread t = new Thread(this.listen);

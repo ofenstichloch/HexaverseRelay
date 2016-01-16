@@ -34,7 +34,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GameClient.cs" />
+    <Compile Include="Host.cs" />
     <Compile Include="InfoSocket.cs" />
+    <Compile Include="Protocol\Protocol.cs" />
+    <Compile Include="Protocol\ByteBuffer.cs" />
+    <Compile Include="Protocol\SerialItem.cs" />
     <Compile Include="RelayServer.cs" />
     <Compile Include="RelaySessionClient.cs" />
     <Compile Include="SessionSocket.cs" />

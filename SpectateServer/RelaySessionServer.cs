@@ -13,8 +13,8 @@ namespace SpectateServer
 
         private bool doListen = false;
 
-        public RelaySessionServer(string name, int port)
-            : base(name, port)
+        public RelaySessionServer(string name, int port, Host h)
+            : base(name, port, h)
         {
 
         }
@@ -50,11 +50,6 @@ namespace SpectateServer
         public override void disconnect()
         {
             doListen = false;
-        }
-
-        public override void redirect(byte[] data)
-        {
-            
         }
 
     }

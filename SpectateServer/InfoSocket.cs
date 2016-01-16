@@ -41,7 +41,6 @@ namespace SpectateServer
                      }
                      else
                      {
-                         server.redirect(data);
                      }
                      
                  }

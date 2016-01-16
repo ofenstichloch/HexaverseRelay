@@ -9,7 +9,7 @@ namespace SpectateServer
 {
     class RelaySessionClient : GameClient
     {
-        public RelaySessionClient(string name, string h, int p) : base(name,h,p)
+        public RelaySessionClient(string name, string h, int p, Host host) : base(name,h,p, host)
 		{
 		}
 
@@ -38,14 +38,17 @@ namespace SpectateServer
                     }
                     if (readPayload)
                     {
-                        payload = new byte[size];
-                        clientStream.Read(payload, 0, size);
-                        byte[] data = new byte[8 + size];
-                        BitConverter.GetBytes(channel).CopyTo(data, 0);
-                        BitConverter.GetBytes(size).CopyTo(data, 4);
-                        payload.CopyTo(data, 8);
-                        server.sendToClients(data);
-                        //TODO Redirect to analytics
+                        if (channel != 2 && channel != 8)
+                        {
+                            payload = new byte[size];
+                            clientStream.Read(payload, 0, size);
+                            byte[] data = new byte[8 + size];
+                            BitConverter.GetBytes(channel).CopyTo(data, 0);
+                            BitConverter.GetBytes(size).CopyTo(data, 4);
+                            payload.CopyTo(data, 8);
+                            server.sendToClients(data, data.Length);
+                            //TODO Redirect to analytics
+                        }
                         readPayload = false;
                     }
                     Thread.Sleep(1);
@@ -62,14 +65,15 @@ namespace SpectateServer
 		private bool loginToSever(){
             try
             {
-                tcpClient.Connect(HOST,PORT);
+                tcpClient.Connect(ServerAddress,ServerPort);
                 clientStream = tcpClient.GetStream();
-                byte[] hello = {7, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-                System.Text.ASCIIEncoding enc = new System.Text.ASCIIEncoding();
-                byte[] name = enc.GetBytes("SpecRelay");
-                name.CopyTo(hello, 8);
-                clientStream.Write(hello,0,hello.Length);
+                Protocol.SerialInterface proc = Protocol.SerialInterface.Build(typeof(String));
+                String name = "SpecRelay";
+                Protocol.ByteBuffer buf = new Protocol.ByteBuffer(name.Length);
+                proc.SerializePacket(7, name, buf);
+                clientStream.Write(buf.GetArray(), 0, buf.Length);
+              
                 return true;
             }
             catch (Exception e)

@@ -11,12 +11,10 @@ namespace SpectateServer
     class RelayInfoServer: RelayServer
     {
         bool doListen = false;
-        RelayInfoClient infoClient;
 
-        public RelayInfoServer(string name, int port, RelayInfoClient infoClient)
-            : base(name, port)
+        public RelayInfoServer(string name, int port, Host h)
+            : base(name, port, h)
         {
-            this.infoClient = infoClient;
         }
 
         public override bool connect()
@@ -50,12 +48,9 @@ namespace SpectateServer
             {
                 Socket client = tcpServer.AcceptSocket();
                 InfoSocket c = new InfoSocket(client, this);
+                //c.send(host.serverInfo,0);
             }
             
-        }
-
-        public override void redirect(byte[] data){
-            infoClient.send(data);
         }
 
     }

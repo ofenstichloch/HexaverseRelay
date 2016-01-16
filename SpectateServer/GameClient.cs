@@ -11,19 +11,21 @@ namespace SpectateServer
     {
 
         //Client
-        protected string HOST;
-        protected int PORT;
+        protected string ServerAddress;
+        protected int ServerPort;
         protected Thread thread;
         protected TcpClient tcpClient;
         protected bool connected = false;
         protected bool doListen = true;
         protected NetworkStream clientStream;
         protected RelayServer server;
+        protected Host host;
 
-        public GameClient(string name, string h, int p) : base(name)
+        public GameClient(string name, string h, int p, Host host) : base(name)
 		{
-            HOST = h;
-            PORT = p;
+            ServerAddress = h;
+            ServerPort = p;
+            this.host = host;
             tcpClient = new TcpClient();
 		}
 

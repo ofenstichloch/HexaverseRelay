@@ -12,10 +12,12 @@ namespace SpectateServer
         protected TcpListener tcpServer;
         protected List<RelaySocket> clients;
         protected int port;
-       public RelayServer(string name, int port) : base(name)
+        protected Host host;
+       public RelayServer(string name, int port, Host host) : base(name)
         {
             this.name = name;
             this.port = port;
+            this.host = host;
             tcpServer = new TcpListener(System.Net.IPAddress.Any, port);
             clients = new List<RelaySocket>();
         }
@@ -38,14 +40,13 @@ namespace SpectateServer
 
 
         //TODO  Sends fom server thread, maybe change to sender Thread(pool)?
-        public void sendToClients(byte[] data)
+        public void sendToClients(byte[] data, int length)
         {
             foreach (RelaySocket c in clients)
             {
-                c.send(data);
+                c.send(data, length);
             }
         }
 
-        public abstract void redirect(byte[] data);
     }
 }

@@ -7,23 +7,18 @@ namespace SpectateServer
 		public static void Main (string[] args)
 		{
             Log.setLevel(2);
-            RelaySessionClient sessionclient = new RelaySessionClient("SessionClient1", "192.168.56.101", 10244);
-            RelayInfoClient infoclient = new RelayInfoClient("InfoClient1", "192.168.56.101", 10245);
-            RelaySessionServer sessionserver = new RelaySessionServer("SessionServer1", 20244);
-            RelayInfoServer infoserver = new RelayInfoServer("InfoServer1", 10245, infoclient);
-            sessionclient.setServer(sessionserver);
-            infoclient.setServer(infoserver);
-            if (sessionserver.connect() && infoserver.connect() )
+            int port = 10247;
+            string host = "127.0.0.1";
+            int listen = 10240;
+            if (args.Length == 3)
             {
-              if(sessionclient.connect() && infoclient.connect() ){
-                   Console.ReadLine();
-                   sessionclient.disconnect();
-                   infoclient.disconnect();
-              }
+                port = int.Parse(args[0]);
+                host = args[1];
+                listen = int.Parse(args[2]);
             }
-           
-            sessionserver.disconnect();
-            infoserver.disconnect();
+
+            Host h = new Host();
+            h.startHost(port, host, listen);
 
 		}
 	}
