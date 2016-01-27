@@ -54,6 +54,7 @@ namespace SpectateServer
                         buf.Clear();
                         Object o = proc.Deserialize(payload,size);
                         Protocol.ServerInfo serverInfo = (Protocol.ServerInfo) o;
+                        serverInfo.gameInfo.gameFlags &= ~((uint) 1 << 5) ;
                         serverInfo.hostInfo.hostID = host.hostID;
                         serverInfo.hostInfo.serverBasePort = (ushort) host.serverPort;
                         host.serverInfo = serverInfo;
@@ -61,7 +62,6 @@ namespace SpectateServer
                         data = buf.GetArray();
 
                         server.sendToClients(buf.GetArray(), buf.Length);
-                        //Save serverinfo
                         readPayload = false;
                     }
                     else if (readPayload && size == 0)

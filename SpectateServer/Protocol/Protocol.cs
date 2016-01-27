@@ -158,6 +158,12 @@ namespace Protocol
 
         }
 
+        public struct Result
+        {
+            public bool success;
+            public byte[] message;
+        }
+
         public struct CryptographicID
         {
             public UInt64 first;

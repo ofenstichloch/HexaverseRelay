@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Net.Sockets;
+using Protocol;
 
 namespace SpectateServer
 {
@@ -38,14 +39,30 @@ namespace SpectateServer
                     }
                     if (readPayload)
                     {
-                        if (channel != 2 && channel != 8)
+                        payload = new byte[size];
+                        clientStream.Read(payload, 0, size);
+                        byte[] data = new byte[8 + size];
+                        BitConverter.GetBytes(channel).CopyTo(data, 0);
+                        BitConverter.GetBytes(size).CopyTo(data, 4);
+                        payload.CopyTo(data, 8);
+                        if (channel == 7)
                         {
-                            payload = new byte[size];
-                            clientStream.Read(payload, 0, size);
-                            byte[] data = new byte[8 + size];
-                            BitConverter.GetBytes(channel).CopyTo(data, 0);
-                            BitConverter.GetBytes(size).CopyTo(data, 4);
-                            payload.CopyTo(data, 8);
+                            SerialInterface proc = SerialInterface.Build(typeof(Result));
+                            Result r = (Result) proc.Deserialize(data, size);
+                            if (r.success == false)
+                            {
+                                disconnect();
+                                return;
+                            }
+                            joinAsSpectator();
+                        }
+                        else if (channel == 8)
+                        {
+                           // SerialInterface proc = SerialInterface.Build(typeof(ClientFactionResponse));
+                           // Result r = (Result)proc.Deserialize(data, size);
+                        }
+                        else if (channel != 2)
+                        {
                             server.sendToClients(data, data.Length);
                             //TODO Redirect to analytics
                         }
@@ -71,9 +88,8 @@ namespace SpectateServer
                 Protocol.SerialInterface proc = Protocol.SerialInterface.Build(typeof(String));
                 String name = "SpecRelay";
                 Protocol.ByteBuffer buf = new Protocol.ByteBuffer(name.Length);
-                proc.SerializePacket(7, name, buf);
+                proc.SerializePacket((int) Protocol.ChannelID.Hello, name, buf);
                 clientStream.Write(buf.GetArray(), 0, buf.Length);
-              
                 return true;
             }
             catch (Exception e)
@@ -83,6 +99,28 @@ namespace SpectateServer
             disconnect();
 			return false;
 		}
+
+        private bool joinAsSpectator()
+        {
+            try
+            {
+                Protocol.SerialInterface proc = Protocol.SerialInterface.Build(typeof(ClientFactionRequest));
+                ClientFactionRequest req = new ClientFactionRequest();
+                req.startFactionTypes = 2;
+                Protocol.ByteBuffer buf = new Protocol.ByteBuffer(288);
+                proc.SerializePacket((int)ChannelID.ClientFaction, req, buf);
+                clientStream.Write(buf.GetArray(), 0, buf.Length);
+
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Log.error(e.Message, this);
+            }
+            disconnect();
+            return false;
+        }
 
         private void maintainConnection()
         {

@@ -12,7 +12,7 @@ namespace SpectateServer
         protected Socket client;
         protected RelayServer server;
         protected bool doListen = true;
-
+        
 
         public RelaySocket(Socket s, RelayServer server)
         {
@@ -32,6 +32,8 @@ namespace SpectateServer
 
         public void send(Object o,uint channel)
         {
+
+            //Todo move to a static list for each object (performance)
             Protocol.SerialInterface proc = Protocol.SerialInterface.Build(o.GetType());
             Protocol.ByteBuffer buf = new Protocol.ByteBuffer(1);
             proc.SerializePacket(channel, o, buf);
