@@ -48,7 +48,6 @@ namespace SpectateServer
             {
                 Socket client = tcpServer.AcceptSocket();
                 InfoSocket c = new InfoSocket(client, this);
-                //c.send(host.serverInfo,0);
             }
             
         }

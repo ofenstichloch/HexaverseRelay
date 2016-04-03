@@ -33,7 +33,6 @@ namespace SpectateServer
                         clientStream.Read(headerBuffer, 0, 8);
                         channel = BitConverter.ToInt32(headerBuffer,0);
                         size = BitConverter.ToInt32(headerBuffer,4);
-                        //Log.notify("Received " + size + "B on channel " + channel, this);
                         readPayload = true;
  
                     }
@@ -48,7 +47,7 @@ namespace SpectateServer
                         if (channel == 7)
                         {
                             SerialInterface proc = SerialInterface.Build(typeof(Result));
-                            Result r = (Result) proc.Deserialize(data, size);
+                            Result r = (Result) proc.Deserialize(payload, size);
                             if (r.success == false)
                             {
                                 disconnect();
@@ -58,11 +57,16 @@ namespace SpectateServer
                         }
                         else if (channel == 8)
                         {
-                           // SerialInterface proc = SerialInterface.Build(typeof(ClientFactionResponse));
-                           // Result r = (Result)proc.Deserialize(data, size);
+                           SerialInterface proc = SerialInterface.Build(typeof(ClientFactionResponse));
+                           ClientFactionResponse r = (ClientFactionResponse)proc.Deserialize(payload, size);
+                        }
+                        else if (channel == (int)Protocol.ChannelID.PhaseChange)
+                        {
+                            host.phase = data;
                         }
                         else if (channel != 2)
                         {
+
                             server.sendToClients(data, data.Length);
                             //TODO Redirect to analytics
                         }
@@ -72,6 +76,7 @@ namespace SpectateServer
                 }
                 catch (Exception e)
                 {
+                    Log.error("Error while listeing.",this);
                     Log.error(e.Message, this);
                 }
 
@@ -94,6 +99,7 @@ namespace SpectateServer
             }
             catch (Exception e)
             {
+                Log.error("Error while logging in.", this);
                 Log.error(e.Message, this);
             }
             disconnect();
@@ -116,6 +122,7 @@ namespace SpectateServer
             }
             catch (Exception e)
             {
+                Log.error("Error while joining.",this);
                 Log.error(e.Message, this);
             }
             disconnect();
@@ -126,9 +133,9 @@ namespace SpectateServer
         {
             while (connected)
             {
-                Thread.Sleep(1000);
                 byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
                 clientStream.Write(ping, 0, 8);
+                Thread.Sleep(1000);
             }
             
         }

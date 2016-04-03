@@ -44,8 +44,17 @@ namespace SpectateServer
         {
             foreach (RelaySocket c in clients)
             {
-                c.send(data, length);
+                if (c.isReady)
+                {
+                    c.send(data, length);
+                }
+                
             }
+        }
+
+        public byte[] getPhase()
+        {
+            return host.phase;
         }
 
     }

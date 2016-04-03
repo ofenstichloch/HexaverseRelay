@@ -11,6 +11,8 @@ namespace SpectateServer
         public Protocol.TUniqueID hostID;
         public Protocol.GameInfo gameInfo;
         public Protocol.ServerInfo serverInfo;
+        public byte[] phase;
+
 
         public RelayInfoClient infoClient;
         public RelayInfoServer infoServer;

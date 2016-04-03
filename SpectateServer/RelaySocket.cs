@@ -12,7 +12,8 @@ namespace SpectateServer
         protected Socket client;
         protected RelayServer server;
         protected bool doListen = true;
-        
+        protected Thread t;
+        public bool isReady = false;
 
         public RelaySocket(Socket s, RelayServer server)
         {
@@ -23,25 +24,27 @@ namespace SpectateServer
             server.registerClient(this);
         }
 
-        protected abstract void listen();
+        protected abstract void receive();
 
         public void send(byte[] data, int length)
         {
+            // TODO: check size
             client.Send(data, length,SocketFlags.None);
         }
 
-        public void send(Object o,uint channel)
+        public void send(Object o,Protocol.ChannelID channel)
         {
 
             //Todo move to a static list for each object (performance)
             Protocol.SerialInterface proc = Protocol.SerialInterface.Build(o.GetType());
             Protocol.ByteBuffer buf = new Protocol.ByteBuffer(1);
-            proc.SerializePacket(channel, o, buf);
+            proc.SerializePacket((uint) channel, o, buf);
             client.Send(buf.GetArray(),buf.Length,SocketFlags.None);
         }
 
         public void disconnect()
         {
+            this.isReady = false;
             server.unregisterClient(this);
             doListen = false;
             client.Close();

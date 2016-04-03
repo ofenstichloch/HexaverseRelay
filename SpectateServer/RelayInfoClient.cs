@@ -39,7 +39,6 @@ namespace SpectateServer
                         clientStream.Read(headerBuffer, 0, 8);
                         channel = BitConverter.ToInt32(headerBuffer, 0);
                         size = BitConverter.ToInt32(headerBuffer, 4);
-                        //Log.notify("Received " + size + "B on channel " + channel, this);
                         readPayload = true;
 
                     }
@@ -54,13 +53,12 @@ namespace SpectateServer
                         buf.Clear();
                         Object o = proc.Deserialize(payload,size);
                         Protocol.ServerInfo serverInfo = (Protocol.ServerInfo) o;
-                        serverInfo.gameInfo.gameFlags &= ~((uint) 1 << 5) ;
+                        serverInfo.gameInfo.gameFlags &= ~((uint) Protocol.gameFlags.SupportRegularFactions);
+                        serverInfo.gameInfo.gameFlags |= (uint)Protocol.gameFlags.SupportSpectatorFactions;//useless?
                         serverInfo.hostInfo.hostID = host.hostID;
                         serverInfo.hostInfo.serverBasePort = (ushort) host.serverPort;
                         host.serverInfo = serverInfo;
                         proc.SerializePacket(0, serverInfo, buf);
-                        data = buf.GetArray();
-
                         server.sendToClients(buf.GetArray(), buf.Length);
                         readPayload = false;
                     }

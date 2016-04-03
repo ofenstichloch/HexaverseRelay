@@ -21,6 +21,8 @@ namespace Protocol
             SetFactionID,		//s2c: NET(TUniqueID)
 
             RequestEverything,	//c2s: <signal> -> [everything] //(only if spectator) 
+            BeginEverything,	//s2c: <signal> //indicates that now everything will be (re)sent
+            EndEverything,		//s2c: <signal> //indicates that the server is done sending everything, and normal delta updates will resume
 
             WorldDelta,			//s2c : WorldDelta
 
@@ -29,7 +31,8 @@ namespace Protocol
             NewMobileEntity,	//s2c: NewMobileEntity
             MobileState,		//s2c: MobileState
             MobileEntityMotion,		//s2c: MobileEntityMotion
-            AttackTrajectory,		//s2c: AttackTrajectory
+            PreciseAttackTrajectory,	//s2c: PreciseAttackTrajectory
+            VagueAttackTrajectory,		//s2c: VagueAttackTrajectory
             EntityTurretRotation,	//s2c: EntityTurretRotation
 
             ChangeEntityOwner,	//s2c: ChangeEntityOwner
@@ -59,7 +62,8 @@ namespace Protocol
 
             EnableStructure,	//c2s: EnableStructure
 
-            Automate,			//c2s: Automate
+            Automate,			//c2s: EntityStateUpdate
+            Sleep,				//c2s: EntityStateUpdate
 
             ResourceUpdate,		//s2c: ResourceUpdate
 
@@ -87,7 +91,6 @@ namespace Protocol
             RC_Kick,					//c2s: pair<TUniqueID,bool>	(kick / kick and ban)
             RC_KickAllNonPrivileged,	//c2s: <signal>
         };
-
         enum InfoChannelID
         {
             ServerInfo,	//s2c: ServerInfo
@@ -102,6 +105,13 @@ namespace Protocol
         public struct Ping
         {
             public UInt64 ping;
+        }
+
+        public struct PhaseChange
+        {
+            public byte newPhase;
+            public UInt32 roundNumber;
+            public float timeFactor;
         }
         public struct THostBroadcastPacket
 	    {
@@ -127,10 +137,26 @@ namespace Protocol
         {
             public UInt32 startFactionTypes;
             public CryptographicID factionToken;
-            public byte[] planetConfig;
+            public PlanetConfig planetConfig;
             public GameInfo info;
         }
 
+        public struct PlanetConfig
+        {
+            public UInt32 innerCoreType;
+            public Vector color;
+            public Vector sunPlane;
+            public Vector sunColor;
+        }
+
+        public struct Vector
+        {
+            public float x;
+            public float y;
+            public float z;
+            public float w;
+
+        }
         public struct GameInfo
         {
             public UInt16 numFactionsOnline;
@@ -141,6 +167,19 @@ namespace Protocol
             public UInt32 gameFlags;
             public byte gameGoal;
         }
+
+        public enum gameFlags
+        {
+            ClosedGame = 0x1,
+            BasesRequired = 0x2,
+            StartBases = 0x4,
+            NexusAI = 0x8,
+            EMPZones = 0x10,
+
+            SupportSpectatorFactions = 0x100,
+            SupportRegularFactions = 0x200,
+
+        };
 
         public struct TUniqueID
         {
