@@ -52,5 +52,10 @@ namespace SpectateServer
             doListen = false;
         }
 
+        public void requestEverything()
+        {
+            host.sessionClient.requestEverything();
+        }
+
     }
 }

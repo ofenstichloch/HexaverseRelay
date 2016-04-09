@@ -16,6 +16,10 @@ namespace SpectateServer
                 host = args[1];
                 listen = int.Parse(args[2]);
             }
+            else
+            {
+                Console.WriteLine("Start with GamePort GameHost ServerPort");
+            }
 
             Host h = new Host();
             h.startHost(port, host, listen);

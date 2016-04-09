@@ -56,6 +56,14 @@ namespace SpectateServer
         {
             return host.phase;
         }
+        public Protocol.ServerInfo getServerInfo()
+        {
+            return host.serverInfo;
+        }
 
+        public Protocol.PlanetConfig getPlanetConfig()
+        {
+            return host.planetConfig;
+        }
     }
 }

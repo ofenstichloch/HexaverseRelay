@@ -40,6 +40,7 @@ namespace SpectateServer
             Protocol.ByteBuffer buf = new Protocol.ByteBuffer(1);
             proc.SerializePacket((uint) channel, o, buf);
             client.Send(buf.GetArray(),buf.Length,SocketFlags.None);
+            Log.notify("Sent packet on channel " + ((Protocol.ChannelID)channel).ToString(),this);
         }
 
         public void disconnect()

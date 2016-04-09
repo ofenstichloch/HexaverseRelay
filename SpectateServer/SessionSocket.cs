@@ -10,13 +10,16 @@ using Protocol;
 
 namespace SpectateServer
 {
+    
     class SessionSocket : RelaySocket
     {
-        public SessionSocket(Socket socket, RelayServer server)
+        new RelaySessionServer server;
+        public SessionSocket(Socket socket, RelaySessionServer server)
             : base(socket, server)
         {
             this.t = new Thread(this.receive);
             this.t.Start();
+            this.server = server;
         }
 
         protected override void receive()
@@ -45,9 +48,13 @@ namespace SpectateServer
                         BitConverter.GetBytes(size).CopyTo(data, 4);
                         payload.CopyTo(data, 8);
                        
-                        if (channel == 7)
+                        if (channel == (int) ChannelID.Hello)
                         {
                             processHello(payload);
+                        }
+                        else if(channel == (int) ChannelID.ClientFaction)
+                        {
+                            processClientFactionRequest(payload);
                         }
                         else
                         {
@@ -55,11 +62,9 @@ namespace SpectateServer
                         }
 
                     }
-                    else if (channel == 1)
+                    else if (channel == (int) ChannelID.Ping)
                     {
-                        data = new byte[8];
-                        BitConverter.GetBytes(2).CopyTo(data,0);
-                        send(data, 8);
+                        send(Signals.pong, 8);
                     }
                 }
                 catch (SocketException e)
@@ -71,6 +76,19 @@ namespace SpectateServer
             }
         }
 
+        private void processClientFactionRequest(byte[] payload)
+        {
+            ClientFactionResponse r = new ClientFactionResponse();
+            r.factionToken = new CryptographicID();
+            r.info = server.getServerInfo().gameInfo;
+            r.planetConfig = server.getPlanetConfig();
+            r.startFactionTypes = 0x2;
+            send(r, ChannelID.ClientFaction);
+            Log.notify("Requesting everything from Gameserver", this);
+            server.requestEverything();
+            this.isReady = true;
+        }
+
         private void processHello(byte[] name)
         {
             //reply to hello
@@ -78,12 +96,10 @@ namespace SpectateServer
             r.success = true;
             r.message = name;
             send(r, ChannelID.Hello);
-            Log.notify("Sent Result", this);
             //send initial phasechange
             byte[] phase = server.getPhase();
             send(phase, phase.Length);
-            Log.notify("Sent Phase", this);
-            this.isReady = true;
+
         }
 
 

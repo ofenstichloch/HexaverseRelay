@@ -36,7 +36,7 @@ namespace SpectateServer
                         readPayload = true;
  
                     }
-                    if (readPayload)
+                    else if (readPayload)
                     {
                         payload = new byte[size];
                         clientStream.Read(payload, 0, size);
@@ -44,7 +44,7 @@ namespace SpectateServer
                         BitConverter.GetBytes(channel).CopyTo(data, 0);
                         BitConverter.GetBytes(size).CopyTo(data, 4);
                         payload.CopyTo(data, 8);
-                        if (channel == 7)
+                        if (channel == (int) ChannelID.Hello)
                         {
                             SerialInterface proc = SerialInterface.Build(typeof(Result));
                             Result r = (Result) proc.Deserialize(payload, size);
@@ -55,18 +55,19 @@ namespace SpectateServer
                             }
                             joinAsSpectator();
                         }
-                        else if (channel == 8)
+                        else if (channel == (int) ChannelID.ClientFaction)
                         {
                            SerialInterface proc = SerialInterface.Build(typeof(ClientFactionResponse));
                            ClientFactionResponse r = (ClientFactionResponse)proc.Deserialize(payload, size);
+                           host.planetConfig = r.planetConfig;
                         }
-                        else if (channel == (int)Protocol.ChannelID.PhaseChange)
+                        else if (channel == (int) ChannelID.PhaseChange)
                         {
                             host.phase = data;
+                            server.sendToClients(data, data.Length);
                         }
                         else if (channel != 2)
                         {
-
                             server.sendToClients(data, data.Length);
                             //TODO Redirect to analytics
                         }
@@ -133,8 +134,7 @@ namespace SpectateServer
         {
             while (connected)
             {
-                byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
-                clientStream.Write(ping, 0, 8);
+                clientStream.Write(Signals.ping, 0, 8);
                 Thread.Sleep(1000);
             }
             
@@ -163,6 +163,12 @@ namespace SpectateServer
             doListen = false;
             connected = false;
             tcpClient.Close();
+        }
+
+        public void requestEverything()
+        {
+            Log.notify("Requesting Everything..", this);
+            clientStream.Write(Signals.requestEverything, 0, 8);
         }
 
     }

@@ -3,6 +3,13 @@ using System.Collections.Generic;
 
 namespace Protocol
 {
+    public class Signals
+    {
+        public static byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
+        public static byte[] pong = { 2, 0, 0, 0, 0, 0, 0, 0 };
+        public static byte[] requestEverything = { 10, 0, 0, 0, 0, 0, 0, 0 };
+    }
+
         enum ChannelID
         {
             Unused,

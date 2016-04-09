@@ -9,7 +9,7 @@ namespace SpectateServer
     class Host
     {
         public Protocol.TUniqueID hostID;
-        public Protocol.GameInfo gameInfo;
+        public Protocol.PlanetConfig planetConfig;
         public Protocol.ServerInfo serverInfo;
         public byte[] phase;
 
