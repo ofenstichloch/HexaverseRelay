@@ -88,7 +88,7 @@ namespace SpectateServer
                 Thread t = new Thread(this.listen);
                 this.setThread(t);
                 t.Start();
-                Log.notify("connected", this);
+                Log.notify("Connected", this);
                 
                 //Thread t1 = new Thread(this.maintainConnection);
                 //t1.Start();

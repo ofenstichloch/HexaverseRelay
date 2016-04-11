@@ -21,7 +21,6 @@ namespace SpectateServer
         {
             try
             {
-                Log.notify("Starting up", this);
                 doListen = true;
                 Thread t = new Thread(this.acceptSockets);
                 t.Start();

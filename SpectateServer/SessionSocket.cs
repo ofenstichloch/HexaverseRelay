@@ -84,6 +84,7 @@ namespace SpectateServer
             r.planetConfig = server.getPlanetConfig();
             r.startFactionTypes = 0x2;
             send(r, ChannelID.ClientFaction);
+            send(Signals.beginGame, Signals.beginGame.Length);
             Log.notify("Requesting everything from Gameserver", this);
             server.requestEverything();
             this.isReady = true;

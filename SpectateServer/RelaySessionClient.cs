@@ -77,7 +77,7 @@ namespace SpectateServer
                 }
                 catch (Exception e)
                 {
-                    Log.error("Error while listeing.",this);
+                    Log.error("Error while reading gamedata.",this);
                     Log.error(e.Message, this);
                 }
 
@@ -150,7 +150,7 @@ namespace SpectateServer
                 t.Start();
                 Thread t1 = new Thread(this.maintainConnection);
                 t1.Start();
-                Log.notify("Connected.", this);
+                Log.notify("Connected", this);
                 return true;
             }
             

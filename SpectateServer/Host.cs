@@ -37,17 +37,37 @@ namespace SpectateServer
             infoServer = new RelayInfoServer("InfoServer1", serverPort, this);
             sessionClient.setServer(sessionServer);
             infoClient.setServer(infoServer);
+            if (infoClient.connect() && sessionClient.connect())
+            {
+                Log.notify("Clients connected", this);
+                if(infoServer.connect() && sessionServer.connect())
+                {
+                    Log.notify("Server started", this);
+                    Console.ReadLine();
+                    sessionServer.disconnect();
+                    infoServer.disconnect();
+                }
+                sessionClient.disconnect();
+                infoClient.disconnect();
+            }
+            else
+            {
+                Log.error("Failed to connect gameclient", this);
+            }
+            
+            /*
             if (sessionServer.connect() && infoServer.connect())
             {
                 if (sessionClient.connect() && infoClient.connect())
                 {
                     Console.ReadLine();
+                    sessionServer.disconnect();
+                    infoServer.disconnect();
                     sessionClient.disconnect();
                     infoClient.disconnect();
                 }
-            }
-            sessionServer.disconnect();
-            infoServer.disconnect();
+            }*/
+
         }
 
     }
