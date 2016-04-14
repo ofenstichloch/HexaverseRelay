@@ -19,7 +19,7 @@ namespace SpectateServer
             int channel = 0;
             int size = 0;
             byte[] payload;
-
+            int received = 0;
             byte[] headerBuffer = new byte[8];
 
             while (doListen || connected)
@@ -27,19 +27,25 @@ namespace SpectateServer
                 try
                 {
                     //Wait for 8 bytes
-                    if (tcpClient.ReceiveBufferSize >= 8 && !readPayload)
+                    if (!readPayload)
                     {
-                        //Get channel and size
-                        clientStream.Read(headerBuffer, 0, 8);
-                        channel = BitConverter.ToInt32(headerBuffer,0);
-                        size = BitConverter.ToInt32(headerBuffer,4);
+                        received = 0;
+                        while (received < 8)
+                        {
+                            received += clientStream.Read(headerBuffer, received, 8-received);
+                        }
+                        channel = BitConverter.ToInt32(headerBuffer, 0);
+                        size = BitConverter.ToInt32(headerBuffer, 4);
                         readPayload = true;
- 
                     }
                     else if (readPayload)
                     {
+                        received = 0;
                         payload = new byte[size];
-                        clientStream.Read(payload, 0, size);
+                        while (received < size)
+                        {
+                            received += clientStream.Read(payload, received, size-received);
+                        }
                         byte[] data = new byte[8 + size];
                         BitConverter.GetBytes(channel).CopyTo(data, 0);
                         BitConverter.GetBytes(size).CopyTo(data, 4);
