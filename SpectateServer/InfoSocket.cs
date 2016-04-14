@@ -25,18 +25,28 @@ namespace SpectateServer
             byte[] header = new byte[8];
             byte[] payload;
             byte[] data;
+            int received = 0;
 
             while (doListen)
             {
                 try
                 {
-                    client.Receive(header, 8, SocketFlags.None);
+                    received = 0;
+                    while (received < 8)
+                    {
+                        received += client.Receive(header, received, 8 - received, SocketFlags.None);
+                    }
                     channel = BitConverter.ToInt32(header, 0);
                     size = BitConverter.ToInt32(header, 4);
                     if (size > 0)
                     {
                         payload = new byte[size];
-                        client.Receive(payload, size, SocketFlags.None);
+                        received = 0;
+                        while (received < size)
+                        {
+                            received += client.Receive(payload,received, size-received, SocketFlags.None);
+                        }
+                        
                         data = new byte[8 + size];
                         BitConverter.GetBytes(channel).CopyTo(data, 0);
                         BitConverter.GetBytes(size).CopyTo(data, 4);
@@ -45,15 +55,11 @@ namespace SpectateServer
                         {
                             send(data, data.Length);
                         }
-                        else
-                        {
-                            
-                        }
-
                     }
                 }
                 catch (SocketException e)
                 {
+                    Log.error(e.Message, this);
                     Log.notify("Client disconnected.", this);
                     this.disconnect();
                 }

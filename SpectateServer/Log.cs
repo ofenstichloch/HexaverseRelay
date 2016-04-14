@@ -21,6 +21,7 @@ namespace SpectateServer
         public static void error(string message, Object sender)
         {
             Console.Out.WriteLine(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + "    ERROR: " + sender.ToString() + ":  " + message);
+            
         }
 
         public static void setLevel(int lvl)

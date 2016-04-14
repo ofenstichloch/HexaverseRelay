@@ -25,27 +25,34 @@ namespace SpectateServer
             int channel = 0;
             int size = 0;
             byte[] payload;
-
+            int received = 0;
             byte[] headerBuffer = new byte[8];
 
             while (doListen || connected)
             {
                 try
                 {
+                    received = 0;
                     //Wait for 8 bytes
-                    if (tcpClient.ReceiveBufferSize >= 8 && !readPayload)
+                    if (!readPayload)
                     {
-                        //Get channel and size
-                        clientStream.Read(headerBuffer, 0, 8);
+                        while (received < 8)
+                        {
+                            clientStream.Read(headerBuffer, received, 8 - received);
+                        }
                         channel = BitConverter.ToInt32(headerBuffer, 0);
                         size = BitConverter.ToInt32(headerBuffer, 4);
                         readPayload = true;
 
                     }
-                    if (readPayload && tcpClient.ReceiveBufferSize >=size)
+                    if (readPayload)
                     {
                         payload = new byte[size];
-                        clientStream.Read(payload, 0, size);
+                        received = 0;
+                        while(received < size)
+                        {
+                            clientStream.Read(payload, received, size - received);
+                        }
                         byte[] data = new byte[8 + size];
                         BitConverter.GetBytes(channel).CopyTo(data, 0);
                         BitConverter.GetBytes(size).CopyTo(data, 4);
@@ -72,6 +79,7 @@ namespace SpectateServer
                 catch (Exception e)
                 {
                     Log.error(e.Message, this);
+                    host.disconnect();
                 }
 
 
@@ -97,7 +105,7 @@ namespace SpectateServer
             catch (Exception e)
             {
                 Log.error(e.Message, this);
-                disconnect();
+                host.disconnect();
                 return false;
             }
            

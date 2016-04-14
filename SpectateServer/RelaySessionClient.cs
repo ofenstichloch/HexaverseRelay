@@ -83,8 +83,9 @@ namespace SpectateServer
                 }
                 catch (Exception e)
                 {
-                    Log.error("Error while reading gamedata.",this);
+                    Log.error("Error while reading data from client.",this);
                     Log.error(e.Message, this);
+                    this.disconnect();
                 }
 
 
@@ -140,7 +141,7 @@ namespace SpectateServer
         {
             while (connected)
             {
-                clientStream.Write(Signals.ping, 0, 8);
+                clientStream.Write(Signals.Ping, 0, 8);
                 Thread.Sleep(1000);
             }
             
@@ -174,7 +175,7 @@ namespace SpectateServer
         public void requestEverything()
         {
             Log.notify("Requesting Everything..", this);
-            clientStream.Write(Signals.requestEverything, 0, 8);
+            clientStream.Write(Signals.RequestEverything, 0, 8);
         }
 
     }

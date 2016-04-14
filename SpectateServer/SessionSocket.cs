@@ -63,7 +63,7 @@ namespace SpectateServer
                         }
                         else if(channel == (int) ChannelID.ClientFaction)
                         {
-                            processClientFactionRequest(payload);
+                            processClientFactionRequest();
                         }
                         else
                         {
@@ -73,7 +73,7 @@ namespace SpectateServer
                     }
                     else if (channel == (int) ChannelID.Ping)
                     {
-                        send(Signals.pong, 8);
+                        send(Signals.Pong, 8);
                     }
                 }
                 catch (SocketException e)
@@ -85,7 +85,7 @@ namespace SpectateServer
             }
         }
 
-        private void processClientFactionRequest(byte[] payload)
+        private void processClientFactionRequest()
         {
             ClientFactionResponse r = new ClientFactionResponse();
             r.factionToken = new CryptographicID();
@@ -93,7 +93,7 @@ namespace SpectateServer
             r.planetConfig = server.getPlanetConfig();
             r.startFactionTypes = 0x2;
             send(r, ChannelID.ClientFaction);
-            send(Signals.beginGame, Signals.beginGame.Length);
+            send(Signals.BeginGame, Signals.BeginGame.Length);
             Log.notify("Requesting everything from Gameserver", this);
             server.requestEverything();
             this.isReady = true;

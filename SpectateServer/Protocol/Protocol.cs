@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace Protocol
 {
-    public class Signals
+    public static class Signals
     {
-        public static byte[] ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
-        public static byte[] pong = { 2, 0, 0, 0, 0, 0, 0, 0 };
-        public static byte[] requestEverything = { 10, 0, 0, 0, 0, 0, 0, 0 };
-        public static byte[] beginGame = { 6, 0, 0, 0, 0, 0, 0, 0 };
+        public static readonly byte[] Ping = { 1, 0, 0, 0, 0, 0, 0, 0 };
+        public static readonly byte[] Pong = { 2, 0, 0, 0, 0, 0, 0, 0 };
+        public static readonly byte[] RequestEverything = { 10, 0, 0, 0, 0, 0, 0, 0 };
+        public static readonly byte[] BeginGame = { 6, 0, 0, 0, 0, 0, 0, 0 };
     }
 
         enum ChannelID
@@ -109,6 +109,7 @@ namespace Protocol
         {
             public THostBroadcastPacket hostInfo;
             public GameInfo gameInfo;
+
         }
         public struct Ping
         {

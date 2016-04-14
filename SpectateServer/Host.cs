@@ -23,6 +23,7 @@ namespace SpectateServer
         public int serverPort;
         string clientHost;
 
+
         public void startHost(int cp, string host, int sp)
         {
             this.clientHost = host;
@@ -54,20 +55,16 @@ namespace SpectateServer
             {
                 Log.error("Failed to connect gameclient", this);
             }
-            
-            /*
-            if (sessionServer.connect() && infoServer.connect())
-            {
-                if (sessionClient.connect() && infoClient.connect())
-                {
-                    Console.ReadLine();
-                    sessionServer.disconnect();
-                    infoServer.disconnect();
-                    sessionClient.disconnect();
-                    infoClient.disconnect();
-                }
-            }*/
 
+        }
+
+        public void disconnect()
+        {
+            sessionServer.disconnect();
+            infoServer.disconnect();
+            sessionClient.disconnect();
+            infoClient.disconnect();
+            Console.ReadLine();
         }
 
     }

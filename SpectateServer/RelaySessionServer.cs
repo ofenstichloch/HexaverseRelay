@@ -43,6 +43,7 @@ namespace SpectateServer
             }
             catch (Exception e)
             {
+                Log.error(e.Message, this);
                 return false;
             }
         }

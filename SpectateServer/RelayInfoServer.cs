@@ -30,6 +30,7 @@ namespace SpectateServer
             catch (Exception e)
             {
                 Log.error(e.Message, this);
+                host.disconnect();
                 return false;
             }
         }
