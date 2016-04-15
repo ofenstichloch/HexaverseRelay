@@ -27,7 +27,6 @@ namespace SpectateServer
             byte[] payload;
             int received = 0;
             byte[] headerBuffer = new byte[8];
-
             while (doListen || connected)
             {
                 try
@@ -38,7 +37,7 @@ namespace SpectateServer
                     {
                         while (received < 8)
                         {
-                            clientStream.Read(headerBuffer, received, 8 - received);
+                            received += clientStream.Read(headerBuffer, received, 8 - received);
                         }
                         channel = BitConverter.ToInt32(headerBuffer, 0);
                         size = BitConverter.ToInt32(headerBuffer, 4);
@@ -50,7 +49,7 @@ namespace SpectateServer
                         received = 0;
                         while(received < size)
                         {
-                            clientStream.Read(payload, received, size - received);
+                            received += clientStream.Read(payload, received, size - received);
                         }
                         byte[] data = new byte[8 + size];
                         BitConverter.GetBytes(channel).CopyTo(data, 0);
