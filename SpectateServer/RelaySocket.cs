@@ -28,7 +28,14 @@ namespace SpectateServer
 
         public void send(byte[] data, int length)
         {
-            // TODO: check size
+            int size = BitConverter.ToInt32(data, 4)+8;
+            int channel = BitConverter.ToInt32(data, 0);
+            if (length != size || size > data.Length)
+            {
+                Log.error("Trying to send an invalid amount of data ("+size+" "+length+ " "+data.Length+")", this);
+                disconnect();
+                return;
+            }
             client.Send(data, length,SocketFlags.None);
         }
 

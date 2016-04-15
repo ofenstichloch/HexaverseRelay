@@ -95,7 +95,11 @@ namespace SpectateServer
             send(r, ChannelID.ClientFaction);
             send(Signals.BeginGame, Signals.BeginGame.Length);
             Log.notify("Requesting everything from Gameserver", this);
-            server.requestEverything();
+            byte[][] cache = server.getBuffer();
+            for(int i = 0; i < cache.Length; i++)
+            {
+                send(cache[i], cache[i].Length);
+            }
             this.isReady = true;
         }
 

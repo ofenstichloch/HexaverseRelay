@@ -10,8 +10,11 @@ namespace SpectateServer
 {
     class RelaySessionClient : GameClient
     {
-        public RelaySessionClient(string name, string h, int p, Host host) : base(name,h,p, host)
+        bool initializing = true;
+        MessageBuffer buffer;
+        public RelaySessionClient(string name, string h, int p, Host host, MessageBuffer buffer) : base(name,h,p, host)
 		{
+            this.buffer = buffer;
 		}
 
 		protected override void listen(){
@@ -32,7 +35,7 @@ namespace SpectateServer
                         received = 0;
                         while (received < 8)
                         {
-                            received += clientStream.Read(headerBuffer, received, 8-received);
+                            received += clientStream.Read(headerBuffer, received, 8 - received);
                         }
                         channel = BitConverter.ToInt32(headerBuffer, 0);
                         size = BitConverter.ToInt32(headerBuffer, 4);
@@ -44,41 +47,45 @@ namespace SpectateServer
                         payload = new byte[size];
                         while (received < size)
                         {
-                            received += clientStream.Read(payload, received, size-received);
+                            received += clientStream.Read(payload, received, size - received);
                         }
                         byte[] data = new byte[8 + size];
                         BitConverter.GetBytes(channel).CopyTo(data, 0);
                         BitConverter.GetBytes(size).CopyTo(data, 4);
                         payload.CopyTo(data, 8);
-                        if (channel == (int) ChannelID.Hello)
+                        if (initializing)
                         {
-                            SerialInterface proc = SerialInterface.Build(typeof(Result));
-                            Result r = (Result) proc.Deserialize(payload, size);
-                            if (r.success == false)
+                            if (channel == (int)ChannelID.Hello)
                             {
-                                disconnect();
-                                return;
+                                SerialInterface proc = SerialInterface.Build(typeof(Result));
+                                Result r = (Result)proc.Deserialize(payload, size);
+                                if (r.success == false)
+                                {
+                                    disconnect();
+                                    return;
+                                }
+                                joinAsSpectator();
                             }
-                            joinAsSpectator();
+                            else if (channel == (int)ChannelID.ClientFaction)
+                            {
+                                SerialInterface proc = SerialInterface.Build(typeof(ClientFactionResponse));
+                                ClientFactionResponse r = (ClientFactionResponse)proc.Deserialize(payload, size);
+                                host.planetConfig = r.planetConfig;
+                                initializing = false;
+                            }
                         }
-                        else if (channel == (int) ChannelID.ClientFaction)
-                        {
-                           SerialInterface proc = SerialInterface.Build(typeof(ClientFactionResponse));
-                           ClientFactionResponse r = (ClientFactionResponse)proc.Deserialize(payload, size);
-                           host.planetConfig = r.planetConfig;
-                        }
-                        else if (channel == (int) ChannelID.PhaseChange)
-                        {
-                            host.phase = data;
-                            server.sendToClients(data, data.Length);
-                        }
-                        else if (channel != 2)
-                        {
-                            server.sendToClients(data, data.Length);
-                            //TODO Redirect to analytics
+                        else {
+                            if (channel == (int)ChannelID.PhaseChange) host.phase = data;
+                            if (channel != 2)
+                            {
+                                buffer.add(data);
+                                server.sendToClients(data, data.Length);
+                                //TODO Redirect to analytics
+                            }
                         }
                         readPayload = false;
                     }
+
                     Thread.Sleep(1);
                 }
                 catch (Exception e)

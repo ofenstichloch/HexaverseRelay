@@ -18,6 +18,7 @@ namespace SpectateServer
         public RelayInfoServer infoServer;
         public RelaySessionClient sessionClient;
         public RelaySessionServer sessionServer;
+        public MessageBuffer buffer;
 
         int clientPort;
         public int serverPort;
@@ -31,10 +32,10 @@ namespace SpectateServer
             this.serverPort = sp;
 
             hostID = Protocol.TUniqueID.generate();
-
-            sessionClient = new RelaySessionClient("SessionClient1", host, clientPort + 1, this);
+            buffer = new MessageBuffer(this);
+            sessionClient = new RelaySessionClient("SessionClient1", host, clientPort + 1, this, buffer);
             infoClient = new RelayInfoClient("InfoClient1", clientHost, clientPort, this);
-            sessionServer = new RelaySessionServer("SessionServer1", serverPort + 1,this);
+            sessionServer = new RelaySessionServer("SessionServer1", serverPort + 1,this, buffer);
             infoServer = new RelayInfoServer("InfoServer1", serverPort, this);
             sessionClient.setServer(sessionServer);
             infoClient.setServer(infoServer);
@@ -43,7 +44,7 @@ namespace SpectateServer
                 Log.notify("Clients connected", this);
                 if(infoServer.connect() && sessionServer.connect())
                 {
-                    Log.notify("Server started", this);
+                    Log.notify("Server started on port "+serverPort, this);
                     Console.ReadLine();
                     sessionServer.disconnect();
                     infoServer.disconnect();

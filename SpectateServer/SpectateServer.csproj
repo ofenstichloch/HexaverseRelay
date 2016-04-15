@@ -34,6 +34,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MessageBuffer.cs" />
     <Compile Include="GameClient.cs" />
     <Compile Include="Host.cs" />
     <Compile Include="InfoSocket.cs" />

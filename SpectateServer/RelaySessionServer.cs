@@ -12,11 +12,12 @@ namespace SpectateServer
     {
 
         private bool doListen = false;
+        private MessageBuffer buffer;
 
-        public RelaySessionServer(string name, int port, Host h)
+        public RelaySessionServer(string name, int port, Host h, MessageBuffer buffer)
             : base(name, port, h)
         {
-
+            this.buffer = buffer;
         }
 
         protected override void acceptSockets()
@@ -56,6 +57,11 @@ namespace SpectateServer
         public void requestEverything()
         {
             host.sessionClient.requestEverything();
+        }
+
+        public byte[][] getBuffer()
+        {
+            return buffer.getData();
         }
 
     }
