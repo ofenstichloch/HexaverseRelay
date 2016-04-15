@@ -42,7 +42,6 @@ namespace SpectateServer
         //TODO  Sends fom server thread, maybe change to sender Thread(pool)?
         public void sendToClients(byte[] data, int length)
         {
-            Log.notify("Sending " + length + " byte to clients",this);
             foreach (RelaySocket c in clients)
             {
                 if (c.isReady)

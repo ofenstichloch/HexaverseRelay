@@ -72,8 +72,8 @@ namespace SpectateServer
                                 host.planetConfig = r.planetConfig;
                                 initializing = false;
                             }
+                            else if (channel == (int)ChannelID.PhaseChange) host.phase = data;
                         }
-<<<<<<< HEAD
                         else {
                             if (channel == (int)ChannelID.PhaseChange) host.phase = data;
                             if (channel != 2)
@@ -82,13 +82,6 @@ namespace SpectateServer
                                 server.sendToClients(data, data.Length);
                                 //TODO Redirect to analytics
                             }
-=======
-                        else if (channel != 2)
-                        {
-                            
-                            server.sendToClients(data, data.Length);
-                            //TODO Redirect to analytics
->>>>>>> master
                         }
                         readPayload = false;
                     }

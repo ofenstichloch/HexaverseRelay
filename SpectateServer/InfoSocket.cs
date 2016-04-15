@@ -38,7 +38,6 @@ namespace SpectateServer
                     }
                     channel = BitConverter.ToInt32(header, 0);
                     size = BitConverter.ToInt32(header, 4);
-                    Log.notify("Received " + 8 + size + " byte on channel " + channel, this);
                     if (size > 0)
                     {
                         payload = new byte[size];
