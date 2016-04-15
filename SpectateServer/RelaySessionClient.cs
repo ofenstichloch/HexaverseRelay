@@ -24,7 +24,6 @@ namespace SpectateServer
             byte[] payload;
             int received = 0;
             byte[] headerBuffer = new byte[8];
-
             while (doListen || connected)
             {
                 try
@@ -74,6 +73,7 @@ namespace SpectateServer
                                 initializing = false;
                             }
                         }
+<<<<<<< HEAD
                         else {
                             if (channel == (int)ChannelID.PhaseChange) host.phase = data;
                             if (channel != 2)
@@ -82,6 +82,13 @@ namespace SpectateServer
                                 server.sendToClients(data, data.Length);
                                 //TODO Redirect to analytics
                             }
+=======
+                        else if (channel != 2)
+                        {
+                            
+                            server.sendToClients(data, data.Length);
+                            //TODO Redirect to analytics
+>>>>>>> master
                         }
                         readPayload = false;
                     }
@@ -174,6 +181,7 @@ namespace SpectateServer
 
         public override void disconnect()
         {
+            Log.notify("Disconnecting...", this);
             doListen = false;
             connected = false;
             tcpClient.Close();
