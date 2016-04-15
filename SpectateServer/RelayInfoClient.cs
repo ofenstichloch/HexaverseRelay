@@ -43,7 +43,6 @@ namespace SpectateServer
                         channel = BitConverter.ToInt32(headerBuffer, 0);
                         size = BitConverter.ToInt32(headerBuffer, 4);
                         readPayload = true;
-
                     }
                     if (readPayload)
                     {

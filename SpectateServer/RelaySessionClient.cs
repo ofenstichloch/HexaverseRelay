@@ -21,7 +21,6 @@ namespace SpectateServer
             byte[] payload;
             int received = 0;
             byte[] headerBuffer = new byte[8];
-
             while (doListen || connected)
             {
                 try
@@ -74,6 +73,7 @@ namespace SpectateServer
                         }
                         else if (channel != 2)
                         {
+                            
                             server.sendToClients(data, data.Length);
                             //TODO Redirect to analytics
                         }
@@ -167,6 +167,7 @@ namespace SpectateServer
 
         public override void disconnect()
         {
+            Log.notify("Disconnecting...", this);
             doListen = false;
             connected = false;
             tcpClient.Close();
