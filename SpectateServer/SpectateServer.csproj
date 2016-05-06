@@ -53,5 +53,8 @@
     <Compile Include="RelayInfoServer.cs" />
     <Compile Include="RelaySessionServer.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Analytics\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
