@@ -52,6 +52,14 @@ namespace SpectateServer
             }
         }
 
+        public void sendToClients(byte[][] data, int length)
+        {
+            foreach (byte[] packet in data)
+            {
+                sendToClients(packet, packet.Length);
+            }
+        }
+
         public byte[] getPhase()
         {
             return host.phase;

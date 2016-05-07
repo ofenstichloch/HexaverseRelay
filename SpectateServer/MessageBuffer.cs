@@ -82,27 +82,30 @@ namespace SpectateServer
                     pointer.Add(new Pointer(false, round, buffer.Count));
                     incrementals++;
                 }
-                //Clean Buffer
-                if (pointer.Count == DELAY+1)
-                {
-                    specRound = round - DELAY+1;
-                    if (!hasData) notReady.Release();
-                    hasData = true;
-                    Log.notify("Gathered enough data to fill delay", this);
+                //Initialize Buffer
+                    if (!hasData && pointer.Count > DELAY)
+                    {
+                        notReady.Release();
+                        hasData = true;
+                        Log.notify("Gathered enough data to fill delay", this);
+                    }
+                if (hasData) {
+                    specRound = round - DELAY ;
                     Pointer nextSpecRound = pointer.FindLast(x => x.round == specRound);
                     int pos = nextSpecRound.position;
                     if (nextSpecRound.isEverything)
                     {
                         Log.notify("Clearin cache", this);
                         buffer.RemoveRange(0, nextSpecRound.position);
-                        for(int i = 0; i < pointer.Count; i++)
+                        for (int i = 0; i < pointer.Count; i++)
                         {
                             pointer[i].position -= pos;
                         }
                     }
-                    pointer.RemoveAt(0);
                 }
 
+                // Delete oldest Pointer
+                if (pointer[0].round < specRound && hasData) pointer.RemoveAt(0);
                 // Refresh basedata
                 if (incrementals >= REQUESTAFTER)
                 {
@@ -112,7 +115,7 @@ namespace SpectateServer
             }
 
             buffer.Add(paket);
-            //if (channel == (int)Protocol.ChannelID.PhaseChange && paket[8] == 0) print();
+            if (channel == (int)Protocol.ChannelID.PhaseChange && paket[8] == 0) print();
             access.Release();
 
         }
@@ -150,12 +153,46 @@ namespace SpectateServer
             notReady.WaitOne();
             notReady.Release();
             access.WaitOne();
-            Pointer nextSpecRound = pointer.FindLast(x => x.round == specRound);
+            Pointer nextSpecRound = pointer.FindLast(x => x.round == specRound+1);
             byte[][] data = new byte[nextSpecRound.position][];
             buffer.CopyTo(0, data, 0, nextSpecRound.position);
             access.Release();
             return data;
 
+        }
+
+        public byte[][] getNextRound()
+        {
+            notReady.WaitOne();
+            notReady.Release();
+            access.WaitOne();
+            Pointer nextSpecRound = pointer.FindLast(x => x.round == specRound+1);
+            Pointer lastSpecRound = pointer.FindLast(x => x.round == specRound);
+            int pos;
+            if (lastSpecRound == null) {
+                pos = 0;
+            }
+            else
+            {
+                pos = Math.Max(lastSpecRound.position,0);
+            }
+            try {
+                Log.notify("Sending Data " + pos + " to " + (nextSpecRound.position),this);
+                byte[][] data = new byte[nextSpecRound.position - pos][];
+                buffer.CopyTo(pos, data, 0, nextSpecRound.position - pos);
+                access.Release();
+                return data;
+            }
+            catch(Exception e)
+            {
+                Log.error("Uh OH", this);
+            }
+            return null;
+
+        }
+        public bool isReady()
+        {
+            return hasData;
         }
 
     }

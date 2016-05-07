@@ -79,8 +79,13 @@ namespace SpectateServer
                             if (channel != 2)
                             {
                                 buffer.add(data);
-                                server.sendToClients(data, data.Length);
+                                //server.sendToClients(data, data.Length);
                                 //TODO Redirect to analytics
+                            }
+                            if (channel == (int)ChannelID.PhaseChange && data[8] == 0 && buffer.isReady())
+                            {
+                                byte[][] nextRound = buffer.getNextRound();
+                                server.sendToClients(nextRound, nextRound.Length);
                             }
                         }
                         readPayload = false;
