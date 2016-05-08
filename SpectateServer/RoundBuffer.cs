@@ -18,10 +18,13 @@ namespace SpectateServer
 
         public RoundBuffer(uint round)
         {
+            data = new List<byte[]>();
             this.round = round;
         }
 
-        public RoundBuffer() { }
+        public RoundBuffer() {
+            data = new List<byte[]>();
+        }
 
         public int getSize()
         {
@@ -38,6 +41,14 @@ namespace SpectateServer
             data.Add(message);
         }
 
+        public void add(RoundBuffer r)
+        {
+            foreach (byte[] d in r.data)
+            {
+                this.add(d);
+            }
+        }
+
         public void setRound(uint newRound)
         {
             this.round = newRound;
@@ -47,6 +58,17 @@ namespace SpectateServer
         {
             return round.CompareTo(other);
         }
+
+        public int CompareTo(RoundBuffer other)
+        {
+            return this.CompareTo(other.round);
+        }
+
+        public override String ToString()
+        {
+            return "Round " + this.round + " with " + data.Count + " pakets";
+        }
+
     }
 
 }

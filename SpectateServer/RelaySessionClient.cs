@@ -26,8 +26,8 @@ namespace SpectateServer
             byte[] headerBuffer = new byte[8];
             while (doListen || connected)
             {
-                try
-                {
+               try
+               {
                     //Wait for 8 bytes
                     if (!readPayload)
                     {
@@ -94,7 +94,7 @@ namespace SpectateServer
                     Thread.Sleep(1);
                 }
                 catch (Exception e)
-                {
+               {
                     Log.error("Error while reading data from client.",this);
                     Log.error(e.Message, this);
                     this.disconnect();
