@@ -34,6 +34,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analytics\Statistics.cs" />
     <Compile Include="MessageBuffer.cs" />
     <Compile Include="GameClient.cs" />
     <Compile Include="Host.cs" />
@@ -54,8 +55,6 @@
     <Compile Include="RelayInfoServer.cs" />
     <Compile Include="RelaySessionServer.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Analytics\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

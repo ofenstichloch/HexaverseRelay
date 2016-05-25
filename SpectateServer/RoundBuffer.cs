@@ -14,12 +14,14 @@ namespace SpectateServer
         */
         List<byte[]> data;
         uint round;
+        long size;
 
 
         public RoundBuffer(uint round)
         {
             data = new List<byte[]>();
             this.round = round;
+            this.size = 0;
         }
 
         public RoundBuffer() {
@@ -31,6 +33,11 @@ namespace SpectateServer
             return data.Count;
         }
 
+        public long getByteCount()
+        {
+            return size;
+        }
+
         public byte[][] getData()
         {
             return data.ToArray();
@@ -39,6 +46,7 @@ namespace SpectateServer
         public void add(byte[] message)
         {
             data.Add(message);
+            size += message.Length;
         }
 
         public void add(RoundBuffer r)
@@ -66,7 +74,8 @@ namespace SpectateServer
 
         public override String ToString()
         {
-            return "Round " + this.round + " with " + data.Count + " pakets";
+            String s = "Round " + this.round + " with " + data.Count + " pakets\n\r";
+            return s;
         }
 
     }

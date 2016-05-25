@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SpectateServer.Analytics;
 
 namespace SpectateServer
 {
@@ -37,6 +34,7 @@ namespace SpectateServer
             infoClient = new RelayInfoClient("InfoClient1", clientHost, clientPort, this);
             sessionServer = new RelaySessionServer("SessionServer1", serverPort + 1,this, buffer);
             infoServer = new RelayInfoServer("InfoServer1", serverPort, this);
+            Statistics stats = new Statistics(buffer, sessionClient, sessionServer);
             sessionClient.setServer(sessionServer);
             infoClient.setServer(infoServer);
             if (infoClient.connect() && sessionClient.connect())
@@ -46,11 +44,13 @@ namespace SpectateServer
                 {
                     Log.notify("Server started on port "+serverPort, this);
                     Console.ReadLine();
-                    sessionServer.disconnect();
-                    infoServer.disconnect();
+                   
+                    disconnect();
                 }
-                sessionClient.disconnect();
-                infoClient.disconnect();
+                else
+                {
+                    Log.error("Failed to start server", this);
+                }
             }
             else
             {
@@ -61,6 +61,7 @@ namespace SpectateServer
 
         public void disconnect()
         {
+            Log.notify(Statistics.getStatistics(), this);
             sessionServer.disconnect();
             infoServer.disconnect();
             sessionClient.disconnect();

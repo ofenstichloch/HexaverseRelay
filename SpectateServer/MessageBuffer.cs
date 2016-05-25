@@ -7,8 +7,8 @@ namespace SpectateServer
     class MessageBuffer
     {
         //Reqeustafter > Delay
-        const int REQUESTAFTER = 20;
-        const int DELAY = 10;
+        const int REQUESTAFTER = 4;
+        const int DELAY = 2;
         Host host;
         Semaphore access;
         Semaphore notReady;
@@ -74,16 +74,32 @@ namespace SpectateServer
                     hasData = true;
                 }
                 //set spectating round
-                if (hasData) specRound = round - DELAY;
+                if (hasData)
+                {
+                    specRound = round - DELAY;
 
-                //remove old phases
-                if (hasData && rounds[0].CompareTo(specRound) < 0) rounds.RemoveAt(0);
-                if (hasData && baseStates.Count > 1 && baseStates[1].CompareTo(specRound) < 0) baseStates.RemoveAt(0);
+                    //remove old phases
+                    if (rounds[0].CompareTo(specRound) < 0) rounds.RemoveAt(0);
+                    if (baseStates.Count > 1 && baseStates[1].CompareTo(specRound) < 0) baseStates.RemoveAt(0);
+                    //Statistics
+                    long cacheSize = 0;
+                    foreach (RoundBuffer r in rounds)
+                    {
+                        cacheSize += r.getByteCount();
+                    }
+                    long stateSize = 0;
+                    foreach (RoundBuffer r in baseStates)
+                    {
+                        stateSize += r.getByteCount();
+                    }
+                    Analytics.Statistics.updateCache(round, cacheSize, stateSize);
+                    Log.notify("CacheSize: " + cacheSize, this);
+                    Log.notify("StateSize: " + stateSize, this);
+                }
                 if (rounds[0].CompareTo(specRound) == 0 && rounds[0].CompareTo(baseStates[0]) != 0) baseStates[0].add(rounds[0]);
 
                 incrementals++;
                 if (incrementals == REQUESTAFTER) host.sessionClient.requestEverything();
-                print();
             }
 
 
@@ -91,15 +107,14 @@ namespace SpectateServer
             {
                 receivingEverything = false;
             }
-
+            if(channel == (int)Protocol.ChannelID.PhaseChange && paket[8]==0) print();
             access.Release();
 
         }
 
         public void print()
         {
-            Log.notify("------------------------------------------------------------", this);
-            Log.notify("Current round: " + round + ". Spectating " + specRound, this);
+            Log.notify("---------Current round: " + round + ". Spectating " + specRound+"----------", this);
             Log.notify("Round buffer:", this);
             int i = 0;
             foreach(RoundBuffer r in rounds)
@@ -114,6 +129,7 @@ namespace SpectateServer
                 Log.notify(i + ": " + r, this);
                 i++;
             }
+            Log.notify("Next rounds first message: " + ((Protocol.ChannelID)BitConverter.ToInt32(rounds[0].getData()[0], 0)).ToString(), this);
             Log.notify("------------------------------------------------------------", this);
         }
 
@@ -130,6 +146,7 @@ namespace SpectateServer
 
         public byte[][] getNextRound()
         {
+            if (receivingEverything) return new byte[0][];
             notReady.WaitOne();
             notReady.Release();
             access.WaitOne();
