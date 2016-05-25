@@ -64,50 +64,51 @@ namespace SpectateServer
                 rounds[rounds.Count - 1].add(paket);
             }
 
-            if(channel == (int)Protocol.ChannelID.PhaseChange && paket[8] == 0)
-            {
-                //Set buffer ready
-                if (!hasData && rounds.Count == DELAY+1)
+                if (channel == (int)Protocol.ChannelID.PhaseChange && paket[8] == 0)
                 {
-                    Log.notify("Buffer ready", this);
-                    notReady.Release();
-                    hasData = true;
-                }
-                //set spectating round
-                if (hasData)
+                    //Set buffer ready
+                    if (!hasData && rounds.Count == DELAY + 1)
+                    {
+                        Log.notify("Buffer ready", this);
+                        notReady.Release();
+                        hasData = true;
+                    }
+                    //set spectating round
+                    if (hasData)
+                    {
+                        specRound = round - DELAY;
+
+                        //remove old phases
+                        if (rounds[0].CompareTo(specRound) < 0) rounds.RemoveAt(0);
+                        if (baseStates.Count > 1 && baseStates[1].CompareTo(specRound) < 0) baseStates.RemoveAt(0);
+                        //Statistics
+                        long cacheSize = 0;
+                        foreach (RoundBuffer r in rounds)
+                        {
+                            cacheSize += r.getByteCount();
+                        }
+                        long stateSize = 0;
+                        foreach (RoundBuffer r in baseStates)
+                        {
+                            stateSize += r.getByteCount();
+                        }
+                        Analytics.Statistics.updateCache(round, cacheSize, stateSize);
+                        Analytics.Statistics.printStatus();
+                    }
+                if (rounds[0].CompareTo(specRound) == 0 && rounds[0].CompareTo(baseStates[0]) != 0)
                 {
-                    specRound = round - DELAY;
-
-                    //remove old phases
-                    if (rounds[0].CompareTo(specRound) < 0) rounds.RemoveAt(0);
-                    if (baseStates.Count > 1 && baseStates[1].CompareTo(specRound) < 0) baseStates.RemoveAt(0);
-                    //Statistics
-                    long cacheSize = 0;
-                    foreach (RoundBuffer r in rounds)
-                    {
-                        cacheSize += r.getByteCount();
-                    }
-                    long stateSize = 0;
-                    foreach (RoundBuffer r in baseStates)
-                    {
-                        stateSize += r.getByteCount();
-                    }
-                    Analytics.Statistics.updateCache(round, cacheSize, stateSize);
-                    Log.notify("CacheSize: " + cacheSize, this);
-                    Log.notify("StateSize: " + stateSize, this);
+                    baseStates[0].add(rounds[0]);
+                    baseStates[0].setRound(rounds[0].getRound());
                 }
-                if (rounds[0].CompareTo(specRound) == 0 && rounds[0].CompareTo(baseStates[0]) != 0) baseStates[0].add(rounds[0]);
-
-                incrementals++;
-                if (incrementals == REQUESTAFTER) host.sessionClient.requestEverything();
-            }
-
-
+                    incrementals++;
+                    if (incrementals == REQUESTAFTER) host.sessionClient.requestEverything();
+                }
+            
             if (channel == (int)Protocol.ChannelID.EndEverything)
             {
                 receivingEverything = false;
             }
-            if(channel == (int)Protocol.ChannelID.PhaseChange && paket[8]==0) print();
+            //if(channel == (int)Protocol.ChannelID.PhaseChange && paket[8]==0) print();
             access.Release();
 
         }
@@ -158,6 +159,11 @@ namespace SpectateServer
         public bool isReady()
         {
             return hasData;
+        }
+
+        public UInt32 getSpectatorRound()
+        {
+            return specRound;
         }
 
     }

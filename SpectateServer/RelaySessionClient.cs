@@ -165,6 +165,7 @@ namespace SpectateServer
             if (connected)
             {
                 Thread t = new Thread(this.listen);
+                t.Name = "SessionClient";
                 this.setThread(t);
                 t.Start();
                 Thread t1 = new Thread(this.maintainConnection);

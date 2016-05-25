@@ -10,6 +10,8 @@ namespace SpectateServer.Analytics
 
     class Statistics
     {
+       //TODO make average statistics optional to allow long runtimes
+        
         public static Statistics instance;
 
         MessageBuffer buffer;
@@ -18,7 +20,9 @@ namespace SpectateServer.Analytics
 
         List<long> cacheSize;
         List<long> stateCacheSize;
+        long sentBytes;
 
+        
 
         public Statistics(MessageBuffer buffer,RelaySessionClient client, RelaySessionServer server)
         {
@@ -30,11 +34,17 @@ namespace SpectateServer.Analytics
             stateCacheSize = new List<long>();
             Statistics.instance = this;
         }
- 
+
+        public static void addSentBytes(int count)
+        {
+            instance.sentBytes += count;
+        }
+
         public static void updateCache(UInt32 round, long cacheSize, long stateCacheSize)
         {
             instance.cacheSize.Add(cacheSize);
             instance.stateCacheSize.Add(stateCacheSize);
+           
         }
 
         public static String getStatistics()
@@ -47,6 +57,17 @@ namespace SpectateServer.Analytics
                 return s;
             }
             return null;
+        }
+    
+        public static void printStatus()
+        {
+            uint round = instance.buffer.getSpectatorRound();
+            Log.notify(round+": RoundSize: " + instance.cacheSize[instance.cacheSize.Count-1], instance);
+            Log.notify(round + ": StateSize: " + instance.stateCacheSize[instance.stateCacheSize.Count-1], instance);
+            Log.notify(round + ": Total players: " + instance.server.getServerInfo().gameInfo.numFactionsCreated, instance);
+            Log.notify(round + ": Bytes sent: " + instance.sentBytes, instance);
+            instance.sentBytes = 0;
+
         }
 
         public static Statistics getInstance()

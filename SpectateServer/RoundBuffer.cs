@@ -62,6 +62,11 @@ namespace SpectateServer
             this.round = newRound;
         }
 
+        public uint getRound()
+        {
+            return round;
+        }
+
         public int CompareTo(uint other)
         {
             return round.CompareTo(other);

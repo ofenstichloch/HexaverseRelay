@@ -37,6 +37,7 @@ namespace SpectateServer
                 return;
             }
             client.Send(data, length,SocketFlags.None);
+            Analytics.Statistics.addSentBytes(length);
         }
 
         public void send(Object o,Protocol.ChannelID channel)
