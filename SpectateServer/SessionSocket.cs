@@ -74,6 +74,21 @@ namespace SpectateServer
                     else if (channel == (int) ChannelID.Ping)
                     {
                         send(Signals.Pong, 8);
+                    }else if (channel == (int)ChannelID.RequestEverything)
+                    {
+                        byte[][] cache = server.getBuffer();
+                        byte[] endEverything = { 12, 0, 0, 0, 0, 0, 0, 0 };
+                        for (int i = 0; i < cache.Length; i++)
+                        {
+                            if (BitConverter.ToInt32(cache[i],0) != (int)ChannelID.EndEverything)
+                            {
+                                send(cache[i], cache[i].Length);
+                                Log.notify("Sent " + ((ChannelID)BitConverter.ToInt32(cache[i], 0)).ToString() + " to relay.", this);
+                            }
+                           
+                        }
+                        send(endEverything, endEverything.Length);
+
                     }
                 }
                 catch (SocketException e)

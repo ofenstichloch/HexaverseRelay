@@ -95,13 +95,18 @@ namespace SpectateServer
                         Analytics.Statistics.updateCache(round, cacheSize, stateSize);
                         Analytics.Statistics.printStatus();
                     }
-                if (rounds[0].CompareTo(specRound) == 0 && rounds[0].CompareTo(baseStates[0]) != 0)
-                {
-                    baseStates[0].add(rounds[0]);
-                    baseStates[0].setRound(rounds[0].getRound());
-                }
-                    incrementals++;
-                    if (incrementals == REQUESTAFTER) host.sessionClient.requestEverything();
+                    //start a new baseState
+                    if (rounds[0].CompareTo(specRound) == 0 && rounds[0].getRound() == baseStates[0].getRound()+1)
+                    {
+                        baseStates[0].add(rounds[0]);
+                        baseStates[0].setRound(rounds[0].getRound());
+                    }
+                    //count to request basestate
+                    if (!receivingEverything)
+                    {
+                        incrementals++;
+                        if (incrementals == REQUESTAFTER) host.sessionClient.requestEverything();
+                    }
                 }
             
             if (channel == (int)Protocol.ChannelID.EndEverything)
@@ -110,7 +115,11 @@ namespace SpectateServer
             }
             //if(channel == (int)Protocol.ChannelID.PhaseChange && paket[8]==0) print();
             access.Release();
-
+            //start a new round for spectators
+            if (hasData && !receivingEverything && channel == (int)Protocol.ChannelID.PhaseChange && paket[8] == 0)
+            {
+                host.sessionClient.nextRound(this.getNextRound());
+            }
         }
 
         public void print()
