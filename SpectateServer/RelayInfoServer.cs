@@ -17,23 +17,7 @@ namespace SpectateServer
         {
         }
 
-        public override bool connect()
-        {
-            try
-            {
-                doListen = true;
-                Thread t = new Thread(this.acceptSockets);
-                t.Start();
-                tcpServer.Start();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Log.error(e.Message, this);
-                host.disconnect();
-                return false;
-            }
-        }
+
 
         public override void disconnect()
         {

@@ -20,6 +20,8 @@ namespace SpectateServer.Analytics
 
         List<long> cacheSize;
         List<long> stateCacheSize;
+        Dictionary<int,int> channels;
+        Dictionary<int,List<int>> channelSizes;
         long sentBytes;
 
         
@@ -32,6 +34,8 @@ namespace SpectateServer.Analytics
             this.server = server;
             cacheSize = new List<long>();
             stateCacheSize = new List<long>();
+            channels = new Dictionary<int, int>();
+            channelSizes = new Dictionary<int, List<int>>();
             Statistics.instance = this;
         }
 
@@ -47,13 +51,44 @@ namespace SpectateServer.Analytics
            
         }
 
+        public static void addPacket(byte[] data)
+        {
+            int currentVal = 0;
+            int channel = BitConverter.ToInt32(data, 0);
+            instance.channels.TryGetValue(channel, out currentVal);
+            instance.channels[channel] = currentVal + 1;
+            List<int> l;
+            instance.channelSizes.TryGetValue(channel, out l);
+            if (l == null)
+            {
+                l = new List<int>();
+                l.Add(data.Length);
+                instance.channelSizes.Add(channel, l);
+            }
+            else
+            {
+                instance.channelSizes[channel].Add(data.Length);
+            }
+
+        }
+
         public static String getStatistics()
         {
             if (instance != null && instance.cacheSize.Count > 0 && instance.stateCacheSize.Count > 0)
             {
                 String s = "---------------Statistics------------\n\r";
-                s += "RoundCache: " + instance.cacheSize.Average(x => x) + " bytes for an average round\n\r";
-                s += "StateCache: " + instance.stateCacheSize.Average(x => x) + " bytes for an average round\n\r";
+                s += "RoundCache\t" + instance.cacheSize.Average(x => x) + "\tbytes for an average round\n\r";
+                s += "StateCache\t" + instance.stateCacheSize.Average(x => x) + "\tbytes for an average state\n\r";
+                foreach(KeyValuePair<int,List<int>> entry in instance.channelSizes)
+                {
+                    double avg = 0;
+                    foreach(int i in entry.Value)
+                    {
+                        avg += i;
+                    }
+                    avg /= entry.Value.Count;
+                    s += "Average size for Channel,count\t" + ((Protocol.ChannelID)entry.Key).ToString() + "\t" + avg+"\t"+entry.Value.Count+"\n\r";
+                }
                 return s;
             }
             return null;
@@ -62,10 +97,10 @@ namespace SpectateServer.Analytics
         public static void printStatus()
         {
             uint round = instance.buffer.getSpectatorRound();
-            Log.notify(round+": RoundSize: " + instance.cacheSize[instance.cacheSize.Count-1], instance);
-            Log.notify(round + ": StateSize: " + instance.stateCacheSize[instance.stateCacheSize.Count-1], instance);
-            Log.notify(round + ": Total players: " + instance.server.getServerInfo().gameInfo.numFactionsCreated, instance);
-            Log.notify(round + ": Bytes sent: " + instance.sentBytes, instance);
+            Log.notify("\t"+round+"\tRoundSize\t" + instance.cacheSize[instance.cacheSize.Count-1], instance);
+            Log.notify("\t"+round + "\tStateSize\t" + instance.stateCacheSize[instance.stateCacheSize.Count-1], instance);
+            Log.notify("\t"+round + "\tTotal players\t" + instance.server.getServerInfo().gameInfo.numFactionsCreated, instance);
+            Log.notify("\t"+round + "\tBytes sent\t" + instance.sentBytes, instance);
             instance.sentBytes = 0;
 
         }

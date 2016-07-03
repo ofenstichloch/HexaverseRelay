@@ -83,7 +83,7 @@ namespace SpectateServer
                             if (BitConverter.ToInt32(cache[i],0) != (int)ChannelID.EndEverything)
                             {
                                 send(cache[i], cache[i].Length);
-                                Log.notify("Sent " + ((ChannelID)BitConverter.ToInt32(cache[i], 0)).ToString() + " to relay.", this);
+                                //Log.notify("Sent " + ((ChannelID)BitConverter.ToInt32(cache[i], 0)).ToString() + " to relay.", this);
                             }
                            
                         }

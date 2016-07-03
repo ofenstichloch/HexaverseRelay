@@ -13,12 +13,16 @@ namespace SpectateServer
         protected List<RelaySocket> clients;
         protected int port;
         protected Host host;
-       public RelayServer(string name, int port, Host host) : base(name)
+        protected bool doListen = false;
+        public RelayServer(string name, int port, Host host) : base(name)
         {
             this.name = name;
             this.port = port;
             this.host = host;
-            tcpServer = new TcpListener(System.Net.IPAddress.Any, port);
+            if (port != 0)
+            {
+                tcpServer = new TcpListener(System.Net.IPAddress.Any, port);
+            }
             clients = new List<RelaySocket>();
         }
 
@@ -32,7 +36,28 @@ namespace SpectateServer
             clients.Remove(c);
         }
 
-        public abstract bool connect();
+        public bool connect()
+        {
+            if(port == 0)
+            {
+                doListen = false;
+                return true;
+            }
+            try
+            {
+                doListen = true;
+                Thread t = new Thread(this.acceptSockets);
+                t.Start();
+                tcpServer.Start();
+                return true;
+            }
+            catch (Exception e)
+            {
+                Log.error(e.Message, this);
+                host.disconnect();
+                return false;
+            }
+        }
 
         public abstract void disconnect();
 

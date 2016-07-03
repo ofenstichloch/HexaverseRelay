@@ -27,7 +27,7 @@ namespace SpectateServer
             this.clientHost = host;
             this.clientPort = cp;
             this.serverPort = sp;
-
+            
             hostID = Protocol.TUniqueID.generate();
             buffer = new MessageBuffer(this);
             sessionClient = new RelaySessionClient("SessionClient1", host, clientPort + 1, this, buffer);
@@ -61,12 +61,11 @@ namespace SpectateServer
 
         public void disconnect()
         {
-            Log.notify(Statistics.getStatistics(), this);
+            Log.error(Statistics.getStatistics(), this);
             sessionServer.disconnect();
             infoServer.disconnect();
             sessionClient.disconnect();
             infoClient.disconnect();
-            Console.ReadLine();
         }
 
     }

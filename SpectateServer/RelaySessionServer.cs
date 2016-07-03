@@ -11,7 +11,6 @@ namespace SpectateServer
     class RelaySessionServer : RelayServer
     {
 
-        private bool doListen = false;
         private MessageBuffer buffer;
 
         public RelaySessionServer(string name, int port, Host h, MessageBuffer buffer)
@@ -32,26 +31,14 @@ namespace SpectateServer
             
         }
 
-        public override bool connect()
-        {
-            try
-            {
-                doListen = true;
-                Thread t = new Thread(this.acceptSockets);
-                t.Start();
-                tcpServer.Start();
-                return true;
-            }
-            catch (Exception e)
-            {
-                Log.error(e.Message, this);
-                return false;
-            }
-        }
-
         public override void disconnect()
         {
             doListen = false;
+            RelaySocket[] list = clients.ToArray<RelaySocket>();
+            foreach (RelaySocket c in list)
+            {
+                c.disconnect();
+            }
         }
 
         public void requestEverything()

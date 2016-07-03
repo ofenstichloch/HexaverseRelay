@@ -7,8 +7,8 @@ namespace SpectateServer
     class MessageBuffer
     {
         //Reqeustafter > Delay
-        const int REQUESTAFTER = 4;
-        const int DELAY = 2;
+        const int REQUESTAFTER = 6;
+        const int DELAY = 3;
         Host host;
         Semaphore access;
         Semaphore notReady;
@@ -39,6 +39,7 @@ namespace SpectateServer
 
         public void add(byte[] paket)
         {
+            Analytics.Statistics.addPacket(paket);
             access.WaitOne(); //Full mutex
             int channel = BitConverter.ToInt32(paket, 0);
             if (channel == (int)Protocol.ChannelID.PhaseChange && paket[8] == 0) round = BitConverter.ToUInt32(paket, 9);
@@ -81,19 +82,22 @@ namespace SpectateServer
                         //remove old phases
                         if (rounds[0].CompareTo(specRound) < 0) rounds.RemoveAt(0);
                         if (baseStates.Count > 1 && baseStates[1].CompareTo(specRound) < 0) baseStates.RemoveAt(0);
-                        //Statistics
-                        long cacheSize = 0;
-                        foreach (RoundBuffer r in rounds)
+                        if (!receivingEverything)
                         {
-                            cacheSize += r.getByteCount();
+                            //Statistics
+                            long cacheSize = 0;
+                            foreach (RoundBuffer r in rounds)
+                            {
+                                cacheSize += r.getByteCount();
+                            }
+                            long stateSize = 0;
+                            foreach (RoundBuffer r in baseStates)
+                            {
+                                stateSize += r.getByteCount();
+                            }
+                            Analytics.Statistics.updateCache(round, cacheSize, stateSize);
+                            Analytics.Statistics.printStatus();
                         }
-                        long stateSize = 0;
-                        foreach (RoundBuffer r in baseStates)
-                        {
-                            stateSize += r.getByteCount();
-                        }
-                        Analytics.Statistics.updateCache(round, cacheSize, stateSize);
-                        Analytics.Statistics.printStatus();
                     }
                     //start a new baseState
                     if (rounds[0].CompareTo(specRound) == 0 && rounds[0].getRound() == baseStates[0].getRound()+1)

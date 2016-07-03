@@ -17,7 +17,7 @@ namespace SpectateServer
             this.buffer = buffer;
 		}
 
-		protected override void listen(){
+        protected override void listen(){
             bool readPayload = false;
             int channel = 0;
             int size = 0;
