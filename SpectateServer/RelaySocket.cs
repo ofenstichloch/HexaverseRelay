@@ -47,7 +47,7 @@ namespace SpectateServer
             Protocol.SerialInterface proc = Protocol.SerialInterface.Build(o.GetType());
             Protocol.ByteBuffer buf = new Protocol.ByteBuffer(1);
             proc.SerializePacket((uint) channel, o, buf);
-            client.Send(buf.GetArray(),buf.Length,SocketFlags.None);
+            send(buf.GetArray(),buf.Length);
             Log.notify("Sent packet on channel " + ((Protocol.ChannelID)channel).ToString(),this);
         }
 

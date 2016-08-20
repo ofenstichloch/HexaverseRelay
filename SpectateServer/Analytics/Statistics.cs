@@ -41,6 +41,7 @@ namespace SpectateServer.Analytics
 
         public static void addSentBytes(int count)
         {
+			//TODO: Add mutex?
             instance.sentBytes += count;
         }
 
@@ -77,6 +78,8 @@ namespace SpectateServer.Analytics
             if (instance != null && instance.cacheSize.Count > 0 && instance.stateCacheSize.Count > 0)
             {
                 String s = "---------------Statistics------------\n\r";
+				s += "Ran with " + MessageBuffer.DELAY + " rounds delay\n\r";
+				s += "Requested a new state every " + MessageBuffer.REQUESTAFTER + " rounds\n\r";
                 s += "RoundCache\t" + instance.cacheSize.Average(x => x) + "\tbytes for an average round\n\r";
                 s += "StateCache\t" + instance.stateCacheSize.Average(x => x) + "\tbytes for an average state\n\r";
                 foreach(KeyValuePair<int,List<int>> entry in instance.channelSizes)
@@ -97,10 +100,10 @@ namespace SpectateServer.Analytics
         public static void printStatus()
         {
             uint round = instance.buffer.getSpectatorRound();
-            Log.notify("\t"+round+"\tRoundSize\t" + instance.cacheSize[instance.cacheSize.Count-1], instance);
-            Log.notify("\t"+round + "\tStateSize\t" + instance.stateCacheSize[instance.stateCacheSize.Count-1], instance);
-            Log.notify("\t"+round + "\tTotal players\t" + instance.server.getServerInfo().gameInfo.numFactionsCreated, instance);
-            Log.notify("\t"+round + "\tBytes sent\t" + instance.sentBytes, instance);
+            Log.notify("\tRound: "+round+"\tRoundSize\t" + instance.cacheSize[instance.cacheSize.Count-1], instance);
+            Log.notify("\tRound: "+round + "\tStateSize\t" + instance.stateCacheSize[instance.stateCacheSize.Count-1], instance);
+            Log.notify("\tRound: "+round + "\tTotal players\t" + instance.server.getServerInfo().gameInfo.numFactionsCreated, instance);
+            Log.notify("\tRound: "+round + "\tBytes sent\t" + instance.sentBytes, instance);
             instance.sentBytes = 0;
 
         }
