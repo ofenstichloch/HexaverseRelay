@@ -61,6 +61,7 @@ namespace SpectateServer
                         serverInfo.gameInfo.gameFlags &= ~((uint) Protocol.gameFlags.SupportRegularFactions);
                         serverInfo.gameInfo.gameFlags |= (uint)Protocol.gameFlags.SupportSpectatorFactions;//useless?
                         serverInfo.hostInfo.hostID = host.hostID;
+                       // serverInfo.gameInfo.worldID = host.worldID;
                         serverInfo.hostInfo.serverBasePort = (ushort) host.serverPort;
                         host.serverInfo = serverInfo;
                         proc.SerializePacket(0, serverInfo, buf);

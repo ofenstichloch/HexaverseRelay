@@ -10,15 +10,12 @@ namespace SpectateServer
     abstract class Log
     {
         private static int loglvl=1;
-        //static StreamWriter file = new StreamWriter(@"C:\Users\alex\Downloads\hexa.txt",true);
 
         public static void notify(string message, Object sender)
         {
             if (loglvl >= 2)
             {
                 Console.Out.WriteLine(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")+"    Notify: " + sender.ToString() + ":  " + message);
-                //file.WriteLine(DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss") + "    Notify: " + sender.ToString() + ":  " + message);
-                //file.Flush();
             }
         }
 

@@ -10,14 +10,13 @@ namespace SpectateServer
 {
     class RelayInfoServer: RelayServer
     {
-        bool doListen = false;
 
         public RelayInfoServer(string name, int port, Host h)
             : base(name, port, h)
         {
         }
 
-
+        
 
         public override void disconnect()
         {

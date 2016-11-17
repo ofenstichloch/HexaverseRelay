@@ -6,6 +6,7 @@ namespace SpectateServer
     class Host
     {
         public Protocol.TUniqueID hostID;
+        public Protocol.TUniqueID worldID;
         public Protocol.PlanetConfig planetConfig;
         public Protocol.ServerInfo serverInfo;
         public byte[] phase;
@@ -29,6 +30,7 @@ namespace SpectateServer
             this.serverPort = sp;
             
             hostID = Protocol.TUniqueID.generate();
+            worldID = Protocol.TUniqueID.generate();
             buffer = new MessageBuffer(this);
             sessionClient = new RelaySessionClient("SessionClient1", host, clientPort + 1, this, buffer);
             infoClient = new RelayInfoClient("InfoClient1", clientHost, clientPort, this);
